@@ -22,10 +22,15 @@ from wsgiref import simple_server
 
 from spewe import Spewe
 
+app = Spewe()
 
-def run():
-    app = Spewe()
-    port = 8099
+
+@app.route('/index')
+def index(request, *args, **kwargs):
+    return 'You hit the index page'
+
+
+def run(port=8099):
     httpd = simple_server.make_server('localhost', port, app)
     print('Started http://localhost:%d/' % port)
     httpd.serve_forever()

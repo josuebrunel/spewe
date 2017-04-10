@@ -17,6 +17,8 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+import re
+
 from spewe.http import Request
 
 
@@ -25,13 +27,45 @@ class Spewe(object):
     def __init__(self):
         self.environ = None
         self.start_response = None
+        self.routes = []
 
     def __call__(self, env, start_response):
         self.environ = env
         self.start_response = start_response
         status = '200 OK'
         headers = {'Content-Type': 'text/plain'}
-        print(Request(env))
-        # import pdb; pdb.set_trace()
+        response = self.handle(Request(env))
         start_response(status, headers.items())
         return ['Hello world!\n']
+
+    def handle(self, request, *args, **kwargs):
+        for route in self.routes:
+            if route.match(request):
+                break
+        else:
+            return ('404 NOT FOUND', None, 'Page not found')
+
+        response = route.view(request, *args, **kwargs)
+        return response
+
+    def route(self, url, methods=['GET'], name=None):
+        def add_route(func):
+            self.routes.append(Route(url, methods, func, name))
+        return add_route
+
+
+class Route(object):
+
+    def __init__(self, url, methods, view, name=None):
+        self.url = url
+        self.methods = methods
+        self.view = view
+        self.name = name if name else view.__name__
+
+    def match(self, request):
+        if request.method not in self.methods:
+            return ('405 METHOD NOT ALLOWED', None, 'Method %s not allowed' % request.method)
+
+        if not re.match(self.url, request.path):
+            return False
+        return True

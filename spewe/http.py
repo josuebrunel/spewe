@@ -23,16 +23,16 @@ class Request(object):
 
     def __init__(self, env):
         self._environ = env
-        self.method = env['REQUEST_METHOD']
-        self.path = env['PATH_INFO']
-        self.query_string = env['QUERY_STRING']
-        self.content_type = env['CONTENT_TYPE']
-        self.content_length = env['CONTENT_LENGTH']
-        self.server_name = env['SERVER_NAME']
-        self.server_port = env['SERVER_PORT']
-        self.server_protocol = env['SERVER_PROTOCOL']
-        self.remote_address = env['REMOTE_ADDR']
-        self.remote_host = env['REMOTE_HOST']
+        self.method = env.get('REQUEST_METHOD', None)
+        self.path = env.get('PATH_INFO', None)
+        self.query_string = env.get('QUERY_STRING', None)
+        self.content_type = env.get('CONTENT_TYPE', None)
+        self.content_length = env.get('CONTENT_LENGTH', None)
+        self.server_name = env.get('SERVER_NAME', None)
+        self.server_port = env.get('SERVER_PORT', None)
+        self.server_protocol = env.get('SERVER_PROTOCOL', None)
+        self.remote_address = env.get('REMOTE_ADDR', None)
+        self.remote_host = env.get('REMOTE_HOST', None)
         # self.body = env['wsgi.input'].read()
         # if 'wsgi.file_wrapper':
         #     self.form = cgi.FieldStorage(fp=env['wsgi.input'], environ=env)

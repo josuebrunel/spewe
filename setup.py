@@ -5,10 +5,6 @@ __author__ = 'Josue Kouka'
 __email__ = 'josuebrunel@gmail.com'
 __version__ = '0.1'
 
-#   requirements.txt
-with open('requirements.txt') as f:
-    required = f.read().splitlines()
-
 
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
@@ -39,5 +35,4 @@ setup(
     ],
     platforms=['Any'],
     license='MIT',
-    install_requires=required
 )

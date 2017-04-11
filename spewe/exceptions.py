@@ -24,8 +24,13 @@ class SpeweException(Exception):
     headers = {'Content-Type': 'text/plain'}
 
 
+class Http404(SpeweException):
+    status_code = status.HTTP_404_NOT_FOUND
+    status_message = 'Page not found'
+
+
 class PermissionDenied(SpeweException):
-    status_code = status.HTTP_403
+    status_code = status.HTTP_403_FORBIDDEN
     status_message = 'Acsess forbidden'
 
 

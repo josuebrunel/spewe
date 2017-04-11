@@ -38,6 +38,8 @@ class Spewe(object):
         self.start_response = start_response
         response = self.handle(Request(env))
         http_status_code = status.describe(response.status_code)
+        if 'Content-Type' not in response.headers:
+            response.headers.update(self.default_response_headers)
         self.start_response(http_status_code,
                             response.headers.items())
         return [response.data]

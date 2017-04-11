@@ -53,7 +53,19 @@ class Request(object):
 
 class Response(object):
 
-    def __init__(self, env):
+    def __init__(self, data='', status_code=200, **kwargs):
+        self.data = data
+        self.status_code = status_code
+        self.headers = kwargs.get('headers', {})
+        self.cookies = kwargs.get('cookies', None)
+
+    def add_header(self, key, value):
+        self.headers[key] = value
+
+    def set_cookie(self, name, value, path='/', expire=None, httponly=None):
+        pass
+
+    def delete_cookies(self):
         pass
 
 

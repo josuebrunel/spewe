@@ -18,6 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 import re
+from wsgiref import simple_server
 
 from spewe.http import Request, Response
 from spewe.exceptions import SpeweException
@@ -40,6 +41,15 @@ class Spewe(object):
         self.start_response(http_status_code,
                             response.headers.items())
         return [response.data]
+
+    def run(self, server_name='localhost', port=8099,
+            server_class=simple_server.WSGIServer, handler_class=simple_server.WSGIRequestHandler):
+        """Create a wsgi server
+        """
+        httpd = simple_server.make_server(server_name, port, self,
+                                          server_class=server_class, handler_class=handler_class)
+        print('Started http://localhost:%d/' % port)
+        httpd.serve_forever()
 
     def handle(self, request, *args, **kwargs):
         for route in self.routes:

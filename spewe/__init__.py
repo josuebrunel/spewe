@@ -19,7 +19,9 @@
 # SOFTWARE.
 import re
 
-from spewe.http import Request
+from spewe.http import Request, Response
+from spewe.exceptions import SpeweException
+from spewe import status
 
 
 class Spewe(object):
@@ -28,24 +30,34 @@ class Spewe(object):
         self.environ = None
         self.start_response = None
         self.routes = []
+        self.default_response_headers = {'Content-Type': 'text/plain'}
 
     def __call__(self, env, start_response):
         self.environ = env
         self.start_response = start_response
-        status = '200 OK'
-        headers = {'Content-Type': 'text/plain'}
         response = self.handle(Request(env))
-        start_response(status, headers.items())
-        return ['Hello world!\n']
+        http_status_code = status.describe(response.status_code)
+        self.start_response(http_status_code,
+                            response.headers.items())
+        return [response.data]
 
     def handle(self, request, *args, **kwargs):
         for route in self.routes:
-            if route.match(request):
+            if route.url_match(request):
                 break
         else:
-            return ('404 NOT FOUND', None, 'Page not found')
+            return Response(data='Page not found', status_code=status.HTTP_404_NOT_FOUND,
+                            headers=self.default_response_headers)
 
-        response = route.view(request, *args, **kwargs)
+        if not route.method_is_allowed(request.method):
+            return Response(data='Method not allowed', status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
+                            headers=self.default_response_headers)
+
+        try:
+            response = route.view(request, *args, **kwargs)
+        except (SpeweException,) as exception:
+            return Response(data=exception.status_message, status_code=exception.status_code,
+                            headers=exception.headers)
         return response
 
     def route(self, url, methods=['GET'], name=None):
@@ -62,10 +74,10 @@ class Route(object):
         self.view = view
         self.name = name if name else view.__name__
 
-    def match(self, request):
-        if request.method not in self.methods:
-            return ('405 METHOD NOT ALLOWED', None, 'Method %s not allowed' % request.method)
-
+    def url_match(self, request):
         if not re.match(self.url, request.path):
             return False
         return True
+
+    def method_is_allowed(self, method):
+        return method in self.methods

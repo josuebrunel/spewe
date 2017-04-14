@@ -10,3 +10,9 @@ script:
 after_success:
 - coverage report
 - coveralls
+notifications:
+    email:
+        recipients:
+            - josuebrunel@gmail.com
+        on_success: change
+        on_failure: always

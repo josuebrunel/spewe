@@ -17,6 +17,11 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+import cgi
+import json
+
+
+HTTP_SAFE_METHODS = ['HEAD', 'GET', 'OPTIONS']
 
 
 class Request(object):
@@ -33,9 +38,8 @@ class Request(object):
         self.server_protocol = env.get('SERVER_PROTOCOL', None)
         self.remote_address = env.get('REMOTE_ADDR', None)
         self.remote_host = env.get('REMOTE_HOST', None)
-        # self.body = env['wsgi.input'].read()
-        # if 'wsgi.file_wrapper':
-        #     self.form = cgi.FieldStorage(fp=env['wsgi.input'], environ=env)
+        if self.method not in HTTP_SAFE_METHODS:
+            self.form = self._parse_fields()
         self._wsgi = {key: value for key, value in env.items() if key.startswith('wsgi')}
         self.headers = {key: value for key, value in env.items() if key.startswith('HTTP')}
 
@@ -43,6 +47,25 @@ class Request(object):
         return '%s - %s' % (self.method, self.get_full_path())
 
     __repr__ = __str__
+
+    def _get_body(self, fp):
+        if not fp:
+            return None
+        fp.seek(0)
+        body = fp.read()
+        fp.seek(0)
+        return body
+
+    def _parse_fields(self):
+        fieldstorage = cgi.FieldStorage(fp=self._environ['wsgi.input'], environ=self._environ)
+        self._fieldstorage = fieldstorage
+        # set form
+        self.form = {field.name: field.value for field in fieldstorage.list}
+        # set body
+        self.body = self._get_body(fieldstorage.fp)
+        # set json if content_type ok
+        if fieldstorage.type in ('application/json'):
+            self.json = json.laods(self.body)
 
     def get_full_path(self):
         return '%s%s' % (self.server_name, self.path)

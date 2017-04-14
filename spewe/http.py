@@ -38,6 +38,7 @@ class Request(object):
         self.server_protocol = env.get('SERVER_PROTOCOL', None)
         self.remote_address = env.get('REMOTE_ADDR', None)
         self.remote_host = env.get('REMOTE_HOST', None)
+        self._parse_qs()
         if self.method not in HTTP_SAFE_METHODS:
             self.form = self._parse_fields()
         self._wsgi = {key: value for key, value in env.items() if key.startswith('wsgi')}
@@ -47,6 +48,10 @@ class Request(object):
         return '%s - %s' % (self.method, self.get_full_path())
 
     __repr__ = __str__
+
+    def _parse_qs(self):
+        self.params = {
+            key: value[0] for key, value in cgi.parse_qs(self.query_string).items()}
 
     def _get_body(self, fp):
         if not fp:

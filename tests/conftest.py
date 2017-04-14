@@ -10,8 +10,10 @@ testapp = Spewe()
 
 
 @testapp.route('/index')
-def index(reqest):
-    return "this is index"
+def index(request):
+    user = request.params.get('user', 'world')
+    origin = request.params.get('from', 'universe')
+    return "Hello %s from %s !" % (user, origin)
 
 
 @testapp.route('/login', methods=['POST'])

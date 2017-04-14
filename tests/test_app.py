@@ -5,7 +5,7 @@ def test_404(app):
 def test_response_as_str(app):
     resp = app.get('/index', status=200)
     assert resp.content_type == 'text/plain'
-    assert resp.text == 'this is index'
+    assert resp.text == 'Hello world from universe !'
 
 
 def test_form_submission(app):
@@ -16,3 +16,8 @@ def test_form_submission(app):
 def test_url_argument_parsing(app):
     resp = app.get('/users/120u12a/', status=200)
     assert resp.text == '120u12a'
+
+
+def test_url_qs_parsing(app):
+    resp = app.get('/index/?user=Cartman&from=Southpark')
+    assert resp.text == 'Hello Cartman from Southpark !'

@@ -20,6 +20,11 @@ def login(request, *args, **kwargs):
     return Response(data=data, status_code=status.HTTP_201_CREATED)
 
 
+@testapp.route(r'^/users/(?P<uuid>[\w,-]+)/$')
+def users(request, uuid, **kwargs):
+    return Response(uuid)
+
+
 @pytest.fixture
 def app():
     return TestApp(testapp)

@@ -66,7 +66,7 @@ class Spewe(object):
                             headers=self.default_response_headers)
 
         try:
-            response = route.view(request, *args, **kwargs)
+            response = route.call_view(request, *args, **kwargs)
         except (SpeweException,) as exception:
             return Response(data=exception.status_message, status_code=exception.status_code,
                             headers=exception.headers)
@@ -87,11 +87,21 @@ class Route(object):
         self.methods = methods
         self.view = view
         self.name = name if name else view.__name__
+        self.match = None
 
     def url_match(self, request):
-        if not re.match(self.url, request.path):
+        match = re.match(self.url, request.path)
+        if not match:
             return False
-        return True
+        # capture url params
+        if getattr(match, 'groupdict'):
+            self.match = match.groupdict()
+        return match
 
     def method_is_allowed(self, method):
         return method in self.methods
+
+    def call_view(self, request, *args, **kwargs):
+        if self.match:
+            kwargs.update(self.match)
+        return self.view(request, *args, **kwargs)

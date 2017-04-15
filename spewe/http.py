@@ -50,8 +50,7 @@ class Request(object):
     __repr__ = __str__
 
     def _parse_qs(self):
-        self.params = {
-            key: value[0] for key, value in cgi.parse_qs(self.query_string).items()}
+        self.params = cgi.parse_qs(self.query_string)
 
     def _get_body(self, fp):
         if not fp:

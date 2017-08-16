@@ -13,7 +13,7 @@ def read(fname):
 setup(
     name="spewe",
     version=__version__,
-    description="Python Yahoo OAuth Library. Supports OAuth1 and OAuth2",
+    description="Stupid Python Web Framework",
     long_description=read("README.rst"),
     author=__author__,
     author_email=__email__,

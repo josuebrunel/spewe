@@ -8,11 +8,14 @@ Spewe is little Python Web Framework.
 Just like spew, this web framework isn't to be used anywhere. Its development is purely educational.
 Therefore no need to expect anything Django fancy or whatsoever
 
+The main goal is just to show people how _easy_ it is to make a simple _Web Framework_ in python.
+
 
 ## Installation
 
 ```shell
-$ pip install spewe
+$ git clone https://github.com/josuebrunel/spewe.git; cd spewe
+$ python setup.py install
 ```
 
 ## Qucik start

@@ -18,8 +18,12 @@ def index(request):
 
 @testapp.route('/login', methods=['POST'])
 def login(request, *args, **kwargs):
-    data = json.dumps(request.form)
-    return Response(data=data, status_code=status.HTTP_201_CREATED)
+    form = request.form
+    if form['username'] == 'loking' and form['password'] == 'lokinghd':
+        response = '<p>User authenticated</p>'
+    else:
+        response = '<p>User not authenticated</p>'
+    return Response(response, status_code=status.HTTP_200_OK)
 
 
 @testapp.route(r'^/users/(?P<uuid>[\w,-]+)/$')

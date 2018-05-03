@@ -38,10 +38,10 @@ class Request(object):
         self.server_protocol = env.get('SERVER_PROTOCOL', None)
         self.remote_address = env.get('REMOTE_ADDR', None)
         self.remote_host = env.get('REMOTE_HOST', None)
-        self._parse_qs()
+        self.params = cgi.parse_qs(self.query_string)
         if self.method not in HTTP_SAFE_METHODS:
-            self.form = self._parse_fields()
-        self._wsgi = {key: value for key, value in env.items() if key.startswith('wsgi')}
+            self.form, self.files = self._parse_multipart()
+        self.body = self._get_body()
         self.headers = {key: value for key, value in env.items() if key.startswith('HTTP')}
 
     def __str__(self):
@@ -49,27 +49,31 @@ class Request(object):
 
     __repr__ = __str__
 
-    def _parse_qs(self):
-        self.params = cgi.parse_qs(self.query_string)
-
-    def _get_body(self, fp):
+    def _get_body(self):
+        fp = self._environ['wsgi.input']
         if not fp:
-            return None
+            return ''
         fp.seek(0)
         body = fp.read()
         fp.seek(0)
         return body
 
-    def _parse_fields(self):
-        fieldstorage = cgi.FieldStorage(fp=self._environ['wsgi.input'], environ=self._environ)
-        self._fieldstorage = fieldstorage
-        # set form
-        self.form = {field.name: field.value for field in fieldstorage.list}
-        # set body
-        self.body = self._get_body(fieldstorage.fp)
-        # set json if content_type ok
-        if fieldstorage.type in ('application/json'):
-            self.json = json.laods(self.body)
+    def _parse_multipart(self):
+        fs = cgi.FieldStorage(fp=self._environ['wsgi.input'],
+                              environ=self._environ)
+        form = {}
+        files = {}
+        for field in fs.list:
+            if field.filename:
+                files.setdefault(field.name, field.value)
+            else:
+                form.setdefault(field.name, field.value)
+        return form, files
+
+    @property
+    def json(self):
+        if self.form.type in ('application/json'):
+            return json.laods(self.body)
 
     def get_full_path(self):
         return '%s%s' % (self.server_name, self.path)

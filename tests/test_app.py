@@ -10,7 +10,8 @@ def test_response_as_str(app):
 
 def test_form_submission(app):
     payload = {'username': 'loking', 'password': 'lokinghd'}
-    app.post('/login', params=payload, status=201)
+    resp = app.post('/login', params=payload, status=200)
+    assert resp.text == u'<p>User authenticated</p>'
 
 
 def test_url_argument_parsing(app):

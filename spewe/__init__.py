@@ -61,7 +61,7 @@ class Spewe(object):
             return Response(data='Page not found', status_code=status.HTTP_404_NOT_FOUND,
                             headers=self.default_response_headers)
 
-        if not route.method_is_allowed(request.method):
+        if not route.is_method_allowed(request.method):
             return Response(data='Method not allowed', status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
                             headers=self.default_response_headers)
 
@@ -75,6 +75,8 @@ class Spewe(object):
         return response
 
     def route(self, url, methods=['GET'], name=None):
+        methods = [method.lower() for method in methods]
+
         def add_route(func):
             self.routes.append(Route(url, methods, func, name))
         return add_route
@@ -98,8 +100,8 @@ class Route(object):
             self.match = match.groupdict()
         return match
 
-    def method_is_allowed(self, method):
-        return method in self.methods
+    def is_method_allowed(self, method):
+        return method.lower() in self.methods
 
     def call_view(self, request, *args, **kwargs):
         if self.match:

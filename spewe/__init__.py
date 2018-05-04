@@ -31,7 +31,7 @@ class Spewe(object):
         self.environ = None
         self.start_response = None
         self.routes = []
-        self.default_response_headers = {'Content-Type': 'text/plain'}
+        self.default_response_headers = {'Content-Type': 'text/html; charset=UTF8'}
 
     def __call__(self, env, start_response):
         self.environ = env

@@ -8,7 +8,7 @@ def test_405_method_not_allowed(app):
 
 def test_response_as_str(app):
     resp = app.get('/index', status=200)
-    assert resp.content_type == 'text/plain'
+    assert resp.content_type == 'text/html'
     assert resp.text == 'Hello world from universe !'
 
 

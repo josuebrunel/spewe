@@ -70,8 +70,6 @@ class Spewe(object):
         except (SpeweException,) as exception:
             return Response(data=exception.status_message, status_code=exception.status_code,
                             headers=exception.headers)
-        if isinstance(response, str):
-            response = Response(response)
         return response
 
     def route(self, url, methods=['GET'], name=None):
@@ -106,4 +104,7 @@ class Route(object):
     def call_view(self, request, *args, **kwargs):
         if self.match:
             kwargs.update(self.match)
-        return self.view(request, *args, **kwargs)
+        response = self.view(request, *args, **kwargs)
+        if isinstance(response, str):
+            response = Response(response)
+        return response

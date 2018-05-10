@@ -6,6 +6,14 @@ def test_405_method_not_allowed(app):
     app.post('/index', status=405)
 
 
+def test_response_default_headers(app):
+    resp = app.get('/index', status=200)
+    assert resp.headers['Content-Type'] == 'text/html; charset=UTF8'
+    assert resp.headers['Content-Length'] == '27'
+    assert resp.headers['Server'] == 'localhost'
+    assert 'Date' in resp.headers
+
+
 def test_response_as_str(app):
     resp = app.get('/index', status=200)
     assert resp.content_type == 'text/html'

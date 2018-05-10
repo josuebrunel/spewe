@@ -17,7 +17,9 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+import datetime
 import re
+import time
 from wsgiref import simple_server
 
 from spewe.http import Request, Response
@@ -42,6 +44,12 @@ class Spewe(object):
         self.start_response(http_status_code,
                             response.headers.items())
         return [response.data]
+
+    @classmethod
+    def date(cls):
+        gmt = time.mktime(time.gmtime())
+        gmt = datetime.datetime.fromtimestamp(gmt)
+        return gmt.strftime('%a, %d %b %Y %H:%M:%S GMT')
 
     def run(self, server_name='localhost', port=8099,
             server_class=simple_server.WSGIServer, handler_class=simple_server.WSGIRequestHandler):
@@ -69,8 +77,12 @@ class Spewe(object):
         except (SpeweException,) as exception:
             return Response(data=exception.status_message, status_code=exception.status_code,
                             headers=exception.headers)
+
+        # Add default response headers
         if 'Content-Type' not in response.headers:
             response.headers._headers.append(self.default_response_headers.items()[0])
+        response.headers.add_header('Server', request.server_name)
+        response.headers.add_header('Date', self.date())
         return response
 
     def route(self, url, methods=['GET'], name=None):

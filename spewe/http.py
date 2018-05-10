@@ -19,6 +19,7 @@
 # SOFTWARE.
 import cgi
 import json
+from wsgiref.headers import Headers
 
 
 HTTP_SAFE_METHODS = ['HEAD', 'GET', 'OPTIONS']
@@ -87,11 +88,11 @@ class Response(object):
     def __init__(self, data='', status_code=200, **kwargs):
         self.data = data
         self.status_code = status_code
-        self.headers = kwargs.get('headers', {})
+        self.headers = Headers(kwargs.get('headers', {}).items())
         self.cookies = kwargs.get('cookies', None)
 
-    def add_header(self, key, value):
-        self.headers[key] = value
+    def add_header(self, name, value, **kwargs):
+        self.headers.add_header(name, value, **kwargs)
 
     def set_cookie(self, name, value, path='/', expire=None, httponly=None):
         pass

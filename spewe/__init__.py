@@ -38,8 +38,7 @@ class Spewe(object):
         self.start_response = start_response
         response = self.handle(Request(env))
         http_status_code = status.describe(response.status_code)
-        if 'Content-Type' not in response.headers:
-            response.headers.update(self.default_response_headers)
+
         self.start_response(http_status_code,
                             response.headers.items())
         return [response.data]
@@ -70,6 +69,8 @@ class Spewe(object):
         except (SpeweException,) as exception:
             return Response(data=exception.status_message, status_code=exception.status_code,
                             headers=exception.headers)
+        if 'Content-Type' not in response.headers:
+            response.headers._headers.append(self.default_response_headers.items()[0])
         return response
 
     def route(self, url, methods=['GET'], name=None):

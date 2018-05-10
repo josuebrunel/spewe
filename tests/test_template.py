@@ -47,3 +47,8 @@ def test_variables(context):
     assert tpl.render(context) == "Hello Mme cloking"
     tpl = Template(content="<span class='bio'>{{user.bio}}</span>")
     assert tpl.render(context) == "<span class='bio'>" + context['user'].bio() + "</span>"
+
+
+def test_iteration(context):
+    tpl = Template(content="<div>{{user.title.capitalize}} {{user.username}} liked the books below: <ul>{% loop books %}<li>{{item.title}} from {{item.author}}</li></ul></div>")
+    assert tpl.render(context) == "<div>Mme cloking liked the books below: <ul><li>1984 from G. Orwell</li></ul></div><li>Animal Farm from G. Orwell</li></ul></div><li>Beloved from Toni Morison</li></ul></div><li>Roots from Alex Haley</li></ul></div><li>So Long A Letter from Mariame Ba</li></ul></div>"

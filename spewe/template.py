@@ -86,6 +86,10 @@ class Node(object):
         return rendered
 
 
+class ScopeNodeMixin(object):
+    scope = True
+
+
 class TextNode(Node):
 
     def render(self, context):
@@ -133,6 +137,21 @@ class VarNode(Node):
         return resolve(content, context)
 
 
+class LoopNode(Node, ScopeNodeMixin):
+
+    def render(self, context):
+        content = self.token.content
+        items = content.strip().split()[-1]
+        if items not in context:
+            raise TemplateContextError("%s does not exist in context" % items)
+        items = context[items]
+        rendered = []
+        for item in items:
+            context['item'] = item
+            rendered.append(''.join([str(child.render(context)) for child in self.children]))
+        return ''.join(rendered)
+
+
 class TemplateParser(object):
 
     def __init__(self, template):
@@ -145,8 +164,14 @@ class TemplateParser(object):
             yield LToken(token)
 
     def _makenode(self, token):
-        if token.content_type == VAR:
+        content = token.content
+        content_type = token.content_type
+        if content_type == VAR:
             return VarNode(token)
+        if content_type == BLOCK_START:
+            statement = content.split()[0]
+            if statement == 'loop':
+                return LoopNode(token)
         else:
             return TextNode(token)
 
@@ -154,10 +179,13 @@ class TemplateParser(object):
         scopes = [self.root]  # rood node
         for token in self.tokens:
             parent_scope = scopes[-1]
-            # if token.content_type == BLOCK_END:
-            #     scopes.pop()
+            if token.content_type == BLOCK_END:
+                scopes.pop()
+                continue
             new_node = self._makenode(token)
             parent_scope.children.append(new_node)
+            if token.content_type == BLOCK_START:
+                scopes.append(new_node)
         return self.root
 
     def parse(self):

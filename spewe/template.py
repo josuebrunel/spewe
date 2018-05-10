@@ -18,7 +18,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import ast
 import io
+import operator
 import re
 
 
@@ -80,10 +82,7 @@ class Node(object):
         return "<%s>" % self.__class__.__name__
 
     def render(self, context):
-        rendered = ''
-        if self.children:
-            rendered = ''.join([str(child.render(context)) for child in self.children])
-        return rendered
+        return ''.join([str(child.render(context)) for child in self.children])
 
 
 class ScopeNodeMixin(object):
@@ -116,7 +115,17 @@ def attr_lookup(obj, attrs):
     return attr_lookup(val, attrs)
 
 
+def is_resolvable(exp):
+    try:
+        ast.literal_eval(exp)
+        return False
+    except (ValueError, SyntaxError):
+        return True
+
+
 def resolve(name, context):
+    if not is_resolvable(name):
+        return ast.literal_eval(name)
     for klen, pkey in get_possible_names(name):
         if pkey in context:
             break
@@ -152,6 +161,73 @@ class LoopNode(Node, ScopeNodeMixin):
         return ''.join(rendered)
 
 
+class IfNode(Node, ScopeNodeMixin):
+
+    operator_lookup = {
+        '==': operator.eq,
+        '!=': operator.ne,
+        '>': operator.gt,
+        '>=': operator.ge,
+        '<': operator.lt,
+        '<=': operator.le,
+        'not': operator.not_
+    }
+
+    @staticmethod
+    def process_statement(content):
+        parts = content.split()[1:]
+        if len(parts) not in (1, 3):
+            if parts[0] != 'not':
+                raise TemplateSyntaxError("invalid syntax: %s" % content)
+        elif len(parts) == 1:
+            return parts
+        return parts
+
+    def eval_statement(self, stm, context):
+
+        def evaluate(op, *args):
+            args = [resolve(hs, context) for hs in args]
+            try:
+                return self.operator_lookup[op](*args)
+            except (KeyError,):
+                raise TemplateSyntaxError('invalid syntax: <%s> is an invalid operator' % op)
+
+        if len(stm) == 1:
+            return operator.truth(resolve(stm[0], context))
+        elif len(stm) == 2:
+            op, args = stm[0], [stm[1]]
+        else:
+            op, args = stm[1], [stm[0], stm[-1]]
+        return evaluate(op, *args)
+
+    def get_branches(self):
+        if_branch = []
+        else_branch = []
+        cur_branch = if_branch  # default branch
+        for child in self.children:
+            if isinstance(child, (ElseNode,)):
+                cur_branch = else_branch
+            cur_branch.append(child)
+        return if_branch, else_branch
+
+    def render(self, context):
+        content = self.token.content
+        formatted_statement = self.process_statement(content)
+        result = self.eval_statement(formatted_statement, context)
+        if_branch, else_branch = self.get_branches()
+        if result:
+            branch = if_branch
+        elif not result and else_branch:
+            branch = else_branch
+        else:
+            return ''
+        return ''.join([str(child.render(context)) for child in branch])
+
+
+class ElseNode(Node, ScopeNodeMixin):
+    pass
+
+
 class TemplateParser(object):
 
     def __init__(self, template):
@@ -172,6 +248,10 @@ class TemplateParser(object):
             statement = content.split()[0]
             if statement == 'loop':
                 return LoopNode(token)
+            elif statement == 'if':
+                return IfNode(token)
+            else:
+                return ElseNode(token)
         else:
             return TextNode(token)
 

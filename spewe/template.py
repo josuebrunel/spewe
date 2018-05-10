@@ -37,6 +37,45 @@ BLOCK_END = 3
 DOT = '.'
 
 
+def get_possible_names(name):
+    parts = name.split(DOT)
+    length = len(parts)
+    idx = length
+    while idx > 0:
+        yield idx, DOT.join(parts[:idx])
+        idx -= 1
+
+
+def attr_lookup(obj, attrs):
+    if not attrs:
+        return obj
+    val = getattr(obj, attrs.pop(0))
+    if not val:
+        return None
+    if callable(val):
+        val = val()
+    return attr_lookup(val, attrs)
+
+
+def resolve(name, context):
+    try:
+        return ast.literal_eval(name)
+    except (ValueError, SyntaxError):
+        pass
+
+    for klen, pkey in get_possible_names(name):
+        if pkey in context:
+            break
+    else:
+        raise TemplateContextError("%s does not exist in context" % name)
+
+    if name == pkey:
+        return context[pkey]
+    attrs = name.split(DOT)
+    attrs.remove(pkey)
+    return attr_lookup(context[pkey], attrs)
+
+
 class TemplateError(Exception):
     pass
 
@@ -93,50 +132,6 @@ class TextNode(Node):
 
     def render(self, context):
         return self.token.content
-
-
-def get_possible_names(name):
-    parts = name.split(DOT)
-    length = len(parts)
-    idx = length
-    while idx > 0:
-        yield idx, DOT.join(parts[:idx])
-        idx -= 1
-
-
-def attr_lookup(obj, attrs):
-    if not attrs:
-        return obj
-    val = getattr(obj, attrs.pop(0))
-    if not val:
-        return None
-    if callable(val):
-        val = val()
-    return attr_lookup(val, attrs)
-
-
-def is_resolvable(exp):
-    try:
-        ast.literal_eval(exp)
-        return False
-    except (ValueError, SyntaxError):
-        return True
-
-
-def resolve(name, context):
-    if not is_resolvable(name):
-        return ast.literal_eval(name)
-    for klen, pkey in get_possible_names(name):
-        if pkey in context:
-            break
-    else:
-        raise TemplateContextError("%s does not exist in context" % name)
-
-    if name == pkey:
-        return context[pkey]
-    attrs = name.split(DOT)
-    attrs.remove(pkey)
-    return attr_lookup(context[pkey], attrs)
 
 
 class VarNode(Node):

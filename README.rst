@@ -74,6 +74,9 @@ Spewe template engine isn't that different from the common ones
         def __repr__(self):
             return "<Product: %s - %s>" % (self.name, self.price)
 
+Let's define a simple context
+
+.. code:: python
 
     >>> user = User(username='cloking', email='cloking@lk.org',
                 fname='chelsea', lname='loking', is_staff=True)
@@ -87,8 +90,10 @@ Spewe template engine isn't that different from the common ones
     >>> from spewe.template import Template
     >>> tpl = Template('whatever.html')
 
-    # the template
-    In [1]: cat whatever.html
+The template as an html file
+
+.. code:: html
+
     <html>
         <head>
             <title>Welcome to {{user.fname}} blog</title>
@@ -118,7 +123,11 @@ Spewe template engine isn't that different from the common ones
             {% endif %}
         </body>
     </html>
-    # rendering
+    
+Let's render the template
+ 
+.. code:: python
+ 
     In [2]: print(tpl.render(context))
     <html>
         <head>
@@ -142,7 +151,7 @@ Spewe template engine isn't that different from the common ones
     </html>
 
     # let's change the user status
-    [3]: user.is_staff = False
+    In [3]: user.is_staff = False
 
     In [4]: print(tpl.render(context))
     <html>

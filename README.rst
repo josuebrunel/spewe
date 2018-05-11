@@ -1,3 +1,11 @@
+.. image:: https://travis-ci.org/josuebrunel/spewe.svg?branch=master
+    :target: https://travis-ci.org/josuebrunel/spewe
+    
+.. image:: https://coveralls.io/repos/github/josuebrunel/spewe/badge.svg?branch=master
+    :target: https://coveralls.io/github/josuebrunel/spewe?branch=master
+
+
+
 SPEWE
 =====
 

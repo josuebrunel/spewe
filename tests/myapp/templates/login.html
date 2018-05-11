@@ -1,0 +1,16 @@
+{% if authenticated %}
+<div class="authenticated">
+    <p>Hello {{username.capitalize}} !</p>
+</div>
+{% else %}
+<div class="not-authenticated">
+    {% if error_message %}
+    <div class="error">{{ error_message }}</div>
+    {% endif %}
+    <form method="post" action="/login">
+        <input type="text" name="username">
+        <input type="password" name="password">
+        <button type="submit"> Submit </button>
+    </form>
+</div>
+{% endif %}

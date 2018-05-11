@@ -21,9 +21,15 @@ def test_response_as_str(app):
 
 
 def test_form_submission(app):
-    payload = {'username': 'loking', 'password': 'lokinghd'}
+    # failed authentication
+    payload = {'username': 'loking', 'password': 'lokinghdx'}
     resp = app.post('/login', params=payload, status=200)
-    assert resp.text == u'<p>User authenticated</p>'
+    assert resp.html.find('div', {'class': 'error'}).text.strip() == u"Invalid credentials"
+    # successful authentication
+    resp.form['username'] = 'loking'
+    resp.form['password'] = 'lokinghd'
+    resp = resp.form.submit()
+    assert resp.html.find('div', {'authenticated'}).p.text.strip() == 'Hello Loking !'
 
 
 def test_url_argument_parsing(app):

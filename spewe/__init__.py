@@ -18,13 +18,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 import datetime
+from functools import wraps
 import re
 import time
 from wsgiref import simple_server
 
-from spewe.http import Request, Response
-from spewe.exceptions import SpeweException
 from spewe import status
+from spewe.exceptions import SpeweException
+from spewe.http import Request, Response
+from spewe.utils import render
 
 
 class Spewe(object):
@@ -33,6 +35,7 @@ class Spewe(object):
         self.environ = None
         self.start_response = None
         self.routes = []
+        self.templates = []
         self.default_response_headers = {'Content-Type': 'text/html; charset=UTF8'}
 
     def __call__(self, env, start_response):
@@ -91,6 +94,23 @@ class Spewe(object):
         def add_route(func):
             self.routes.append(Route(url, methods, func, name))
         return add_route
+
+    def template(self, name):
+        def decorator(func):
+            self.templates.append(name)
+
+            @wraps(func)
+            def wrapper(*args, **kwargs):
+                context = {'request': args[0]}
+                kwargs['context'] = context
+                response = func(*args, **kwargs)
+                if isinstance(response, (dict,)):
+                    response = render(func, name, context)
+                return response
+
+            return wrapper
+
+        return decorator
 
 
 class Route(object):

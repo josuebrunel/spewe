@@ -1,4 +1,4 @@
-from spewe import Spewe, status
+from spewe import Spewe
 from spewe.http import Response
 
 
@@ -13,13 +13,17 @@ def index(request):
 
 
 @testapp.route('/login', methods=['POST'])
+@testapp.template('login.html')
 def login(request, *args, **kwargs):
     form = request.form
+    context = kwargs['context']
     if form['username'] == 'loking' and form['password'] == 'lokinghd':
-        response = '<p>User authenticated</p>'
+        context['authenticated'] = True
+        context['username'] = form['username']
     else:
-        response = '<p>User not authenticated</p>'
-    return Response(response, status_code=status.HTTP_200_OK)
+        context['authenticated'] = False
+        context['error_message'] = "Invalid credentials"
+    return context
 
 
 @testapp.route(r'^/users/(?P<uuid>[\w,-]+)/$')

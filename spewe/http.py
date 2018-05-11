@@ -42,7 +42,7 @@ class Request(object):
         self.params = cgi.parse_qs(self.query_string)
         if self.method not in HTTP_SAFE_METHODS:
             self.form, self.files = self._parse_multipart()
-        self.body = self._get_body()
+            self.body = self._get_body()
         self.headers = {key: value for key, value in env.items() if key.startswith('HTTP')}
 
     def __str__(self):

@@ -3,7 +3,8 @@
     
 .. image:: https://coveralls.io/repos/github/josuebrunel/spewe/badge.svg?branch=master
     :target: https://coveralls.io/github/josuebrunel/spewe?branch=master
-
+    
+.. _test_app: /tests/test_app.py#test_form_submission
 
 
 SPEWE
@@ -42,6 +43,66 @@ This an example of a simple *Hello World* application
 
     if __name__ == '__main__':
         app.run(port=8099)
+
+
+View with template
+^^^^^^^^^^^^^^^^^^
+
+The structure of the application must be as follow:
+
+.. code:: shell
+
+    myapp/
+        ├── __init__.py
+        ├── templates
+        │   └── login.html
+        └── views.py
+        
+The template directory must be at the same level than your *views.py*. 
+
+*views.py*
+
+.. code:: python
+
+    @testapp.route('/login', methods=['POST'])
+    @testapp.template('login.html')
+    def login(request, *args, **kwargs):
+        form = request.form
+        context = kwargs['context']
+        if form['username'] == 'loking' and form['password'] == 'lokinghd':
+            context['authenticated'] = True
+            context['username'] = form['username']
+        else:
+            context['authenticated'] = False
+            context['error_message'] = "Invalid credentials"
+        return context
+        
+To use a template for your view, just pass the template name to *app.template* decorator. When the view will be called, a *context* is passed in *kwargs*.
+In order to render the template in the response, a *dict* object has to be returned instead of a *response* object.
+        
+*login.html*
+        
+.. code:: html
+
+    {% if authenticated %}
+    <div class="authenticated">
+        <p>Hello {{username.capitalize}} !</p>
+    </div>
+    {% else %}
+    <div class="not-authenticated">
+        {% if error_message %}
+        <div class="error">{{ error_message }}</div>
+        {% endif %}
+        <form method="post" action="/login">
+            <input type="text" name="username">
+            <input type="password" name="password">
+            <button type="submit"> Submit </button>
+        </form>
+    </div>
+    {% endif %}
+
+
+You can check test result in test_app_ 
 
 
 Templates

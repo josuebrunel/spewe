@@ -36,20 +36,21 @@ class Spewe(object):
         self.start_response = None
         self.routes = []
         self.templates = []
-        self.default_response_headers = {'Content-Type': 'text/html; charset=UTF8'}
 
     def __call__(self, env, start_response):
         self.environ = env
         self.start_response = start_response
+        request = Request(env)
         response = self.handle(Request(env))
         http_status_code = status.describe(response.status_code)
-
+        response.add_header('Server', request.server_name)
+        response.add_header('Date', self.gmtdate)
         self.start_response(http_status_code,
                             response.headers.items())
-        return [response.data]
+        return [response.data.encode('utf-8')]
 
-    @classmethod
-    def date(cls):
+    @property
+    def gmtdate(self):
         gmt = time.mktime(time.gmtime())
         gmt = datetime.datetime.fromtimestamp(gmt)
         return gmt.strftime('%a, %d %b %Y %H:%M:%S GMT')
@@ -68,24 +69,16 @@ class Spewe(object):
             if route.url_match(request):
                 break
         else:
-            return Response(data='Page not found', status_code=status.HTTP_404_NOT_FOUND,
-                            headers=self.default_response_headers)
+            return Response(data='Page not found', status_code=status.HTTP_404_NOT_FOUND)
 
         if not route.is_method_allowed(request.method):
-            return Response(data='Method not allowed', status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
-                            headers=self.default_response_headers)
+            return Response(data='Method not allowed', status_code=status.HTTP_405_METHOD_NOT_ALLOWED)
 
         try:
             response = route.call_view(request, *args, **kwargs)
         except (SpeweException,) as exception:
             return Response(data=exception.status_message, status_code=exception.status_code,
                             headers=exception.headers)
-
-        # Add default response headers
-        if 'Content-Type' not in response.headers:
-            response.headers._headers.append(self.default_response_headers.items()[0])
-        response.headers.add_header('Server', request.server_name)
-        response.headers.add_header('Date', self.date())
         return response
 
     def route(self, url, methods=['GET'], name=None):

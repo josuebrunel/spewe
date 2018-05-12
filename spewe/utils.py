@@ -23,8 +23,14 @@ from spewe.template import Template
 from spewe.http import Response
 
 
+def get_func_filename(func):
+    if hasattr(func, 'func_code'):
+        return func.func_code.co_filename
+    return func.__code__.co_filename
+
+
 def get_view_template(func_view, template_name):
-    dirname = os.path.dirname(func_view.func_code.co_filename)
+    dirname = os.path.dirname(get_func_filename(func_view))
     return os.path.join(dirname, 'templates', template_name)
 
 

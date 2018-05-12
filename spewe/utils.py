@@ -34,7 +34,7 @@ def get_view_template(func_view, template_name):
     return os.path.join(dirname, 'templates', template_name)
 
 
-def render(view, template_name, context):
+def render_view_template(view, template_name, context):
     template_name = get_view_template(view, template_name)
     tpl = Template(template_name)
     content = tpl.render(context)

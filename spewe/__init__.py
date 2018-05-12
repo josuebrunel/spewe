@@ -26,7 +26,7 @@ from wsgiref import simple_server
 from spewe import status
 from spewe.exceptions import SpeweException
 from spewe.http import Request, Response
-from spewe.utils import render
+from spewe.utils import render_view_template
 
 
 class Spewe(object):
@@ -98,7 +98,7 @@ class Spewe(object):
                 kwargs['context'] = context
                 response = func(*args, **kwargs)
                 if isinstance(response, (dict,)):
-                    response = render(func, name, context)
+                    response = render_view_template(func, name, context)
                 return response
 
             return wrapper

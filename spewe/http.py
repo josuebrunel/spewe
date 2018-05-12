@@ -83,13 +83,16 @@ class Request(object):
         return '%s%s' % (self.server_name, path)
 
 
-class Response(object):
+class BaseResponse(object):
 
-    def __init__(self, data='', status_code=200, **kwargs):
+    def __init__(self, data='', status_code=200, content_type=None, **kwargs):
         self.data = data
         self.status_code = status_code
-        self.headers = Headers(kwargs.get('headers', {}).items())
+        self.headers = Headers([])
         self.cookies = kwargs.get('cookies', None)
+        self.content_type
+        if self.content_type:
+            self.headers.add_header('Content-Type', self.content_type)
 
     def add_header(self, name, value, **kwargs):
         self.headers.add_header(name, value, **kwargs)
@@ -99,6 +102,11 @@ class Response(object):
 
     def delete_cookies(self):
         pass
+
+
+class Response(BaseResponse):
+
+    content_type = 'text/html; charset=UTF8'
 
 
 __all__ = [Request, Response]

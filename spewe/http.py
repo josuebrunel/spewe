@@ -25,6 +25,27 @@ from wsgiref.headers import Headers
 HTTP_SAFE_METHODS = ['HEAD', 'GET', 'OPTIONS']
 
 
+class HttpStatus(object):
+
+    def __init__(self):
+        self._statuses = {}
+        try:
+            from http.server import HTTPStatus
+            self._statuses = {status.value: status.phrase for status in HTTPStatus}
+        except (ImportError,):
+            import httplib
+            self._statuses = httplib.responses
+        for value, phrase in self._statuses.items():
+            phrase = 'HTTP_%d_%s' % (value, phrase.upper().replace(' ', '_'))
+            setattr(self, phrase, value)
+
+    def describe(self, status_code):
+        return '%d %s' % (status_code, self._statuses[status_code].upper())
+
+
+status = HttpStatus()
+
+
 class Request(object):
 
     def __init__(self, env):

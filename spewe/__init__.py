@@ -23,9 +23,8 @@ import re
 import time
 from wsgiref import simple_server
 
-from spewe import status
 from spewe.exceptions import SpeweException
-from spewe.http import Request, Response
+from spewe.http import Request, Response, status
 from spewe.utils import render_view_template
 
 

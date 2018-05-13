@@ -48,9 +48,11 @@ status = HttpStatus()
 
 class XFormFile(object):
 
-    def __init__(self, filename, content):
+    def __init__(self, filename, content, content_type=None, encoding=None):
         self.filename = filename
         self.content = content.decode()
+        self.content_type = content_type
+        self.encoding = encoding
 
     def __repr__(self):
         return '<XFormFile: %s>' % self.filename
@@ -100,7 +102,9 @@ class Request(object):
         files = {}
         for field in fs.list:
             if field.filename:
-                files.setdefault(field.name, XFormFile(field.filename, field.value))
+                xfile = XFormFile(field.filename, field.value, field.type,
+                                  getattr(field, 'encoding', 'utf-8'))
+                files.setdefault(field.name, xfile)
             else:
                 form.setdefault(field.name, field.value)
         return form, files

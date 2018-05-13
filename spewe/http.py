@@ -46,6 +46,16 @@ class HttpStatus(object):
 status = HttpStatus()
 
 
+class XFormFile(object):
+
+    def __init__(self, filename, content):
+        self.filename = filename
+        self.content = content.decode()
+
+    def __repr__(self):
+        return '<XFormFile: %s>' % self.filename
+
+
 class Request(object):
 
     def __init__(self, env):
@@ -61,6 +71,9 @@ class Request(object):
         self.remote_address = env.get('REMOTE_ADDR', None)
         self.remote_host = env.get('REMOTE_HOST', None)
         self.params = cgi.parse_qs(self.query_string)
+        self.form = {}
+        self.files = {}
+        self.body = ''
         if self.method not in HTTP_SAFE_METHODS:
             self.form, self.files = self._parse_multipart()
             self.body = self._get_body()
@@ -87,7 +100,7 @@ class Request(object):
         files = {}
         for field in fs.list:
             if field.filename:
-                files.setdefault(field.name, field.value)
+                files.setdefault(field.name, XFormFile(field.filename, field.value))
             else:
                 form.setdefault(field.name, field.value)
         return form, files

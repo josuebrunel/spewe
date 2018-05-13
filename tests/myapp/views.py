@@ -40,3 +40,12 @@ def login(request, *args, **kwargs):
 @testapp.route(r'^/users/(?P<uuid>[\w,-]+)/$')
 def users(request, uuid, **kwargs):
     return Response(uuid)
+
+
+@testapp.route(r'^/users/(?P<uuid>[\w,-]+)/notes/', methods=['GET', 'POST'])
+@testapp.template('notes.html')
+def notes(request, uuid, *args, **kwargs):
+    if request.method == 'GET':
+        return {}
+    context = kwargs.get('context', {})
+    return context

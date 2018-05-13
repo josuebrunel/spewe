@@ -1,0 +1,20 @@
+<div class="content">
+    {% if request.files %}
+    <div class="notes">
+        {% loop request.files.items %}
+        <div class="note">
+            <span class="note-title">{{ item[1].filename }}</span>
+            <p class="note-content">{{ item[1].content }}</p>
+        </div>
+        {% endloop %}
+    </div>
+    {% else %}
+    <div class="note-form">
+        <form method="post" enctype="multipart/form-data">
+            <input type="file" name="note">
+            <input type="text" name="description">
+            <button type="submit"> Submit </button>
+        </form>
+    </div>
+    {% endif %}
+</div>

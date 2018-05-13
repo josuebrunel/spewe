@@ -1,5 +1,7 @@
 import utils
 
+from webtest import Upload
+
 
 def test_none_response(app):
     app.get('/none/', status=204)
@@ -37,6 +39,19 @@ def test_form_submission(app):
     resp.form['password'] = 'lokinghd'
     resp = resp.form.submit()
     assert resp.html.find('div', {'authenticated'}).p.text.strip() == 'Hello Loking !'
+
+
+def test_form_submission_with_file(app):
+    uuid = 'abcd' * 8
+    url = '/users/%s/notes/' % uuid
+    filename = 'issue25.txt'
+    filecontent = 'CBV in da place baby !!!'.encode('utf-8')
+    resp = app.get(url)
+    resp.form['description'] = 'little note about the issue #25'
+    resp.form['note'] = Upload(filename, filecontent, 'text/plain')
+    resp = resp.form.submit()
+    assert resp.html.find('span', {'class': 'note-title'}).text.strip() == filename
+    assert resp.html.find('p', {'class': 'note-content'}).text.strip() == filecontent.decode()
 
 
 def test_url_argument_parsing(app):

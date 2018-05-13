@@ -5,6 +5,11 @@ from spewe.http import Response
 testapp = Spewe()
 
 
+@testapp.route('/none/')
+def none(request):
+    return None
+
+
 @testapp.route('/index')
 def index(request):
     user = request.params.get('user', ['world'])

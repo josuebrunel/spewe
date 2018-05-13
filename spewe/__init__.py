@@ -75,6 +75,8 @@ class Spewe(object):
 
         try:
             response = route.call_view(request, *args, **kwargs)
+            if response is None:
+                return Response(status_code=204, content_type='')
         except (SpeweException,) as exception:
             return Response(data=exception.status_message, status_code=exception.status_code)
         return response

@@ -1,3 +1,7 @@
+def test_none_response(app):
+    app.get('/none/', status=204)
+
+
 def test_404(app):
     app.get('/', status=404)
 

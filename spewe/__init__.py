@@ -76,8 +76,7 @@ class Spewe(object):
         try:
             response = route.call_view(request, *args, **kwargs)
         except (SpeweException,) as exception:
-            return Response(data=exception.status_message, status_code=exception.status_code,
-                            headers=exception.headers)
+            return Response(data=exception.status_message, status_code=exception.status_code)
         return response
 
     def route(self, url, methods=['GET'], name=None):

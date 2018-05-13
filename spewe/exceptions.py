@@ -21,7 +21,7 @@ from spewe.http import status
 
 
 class SpeweException(Exception):
-    headers = {'Content-Type': 'text/plain'}
+    pass
 
 
 class Http404(SpeweException):

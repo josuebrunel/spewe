@@ -23,6 +23,8 @@ import io
 import operator
 import re
 
+from spewe.exceptions import TemplateContextError, TemplateSyntaxError
+
 
 VAR_TOKEN_START, VAR_TOKEN_END = "{{", "}}"
 BLOCK_TOKEN_START, BLOCK_TOKEN_END = "{%", "%}"
@@ -74,18 +76,6 @@ def resolve(name, context):
     attrs = name.split(DOT)
     attrs.remove(pkey)
     return attr_lookup(context[pkey], attrs)
-
-
-class TemplateError(Exception):
-    pass
-
-
-class TemplateSyntaxError(TemplateError):
-    pass
-
-
-class TemplateContextError(TemplateError):
-    pass
 
 
 class LToken(object):

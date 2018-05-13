@@ -37,3 +37,15 @@ class PermissionDenied(SpeweException):
 class MethodNotAllowed(SpeweException):
     status_code = status.HTTP_405_METHOD_NOT_ALLOWED
     status_message = 'Method not allowed'
+
+
+class TemplateError(SpeweException):
+    pass
+
+
+class TemplateSyntaxError(TemplateError):
+    pass
+
+
+class TemplateContextError(TemplateError):
+    pass

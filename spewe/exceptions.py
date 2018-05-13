@@ -61,3 +61,8 @@ class TemplateSyntaxError(TemplateError):
 class TemplateContextError(TemplateError):
 
     error_message = '<{}> does not exist in context'
+
+
+class TemplateAttributeError(TemplateError):
+
+    error_message = '{}'

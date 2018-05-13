@@ -48,6 +48,11 @@ def test_variables(context):
         tpl = Template(content="Hello {{user}}")
         tpl.render({})
     assert exc.value.args[0] == '<user> does not exist in context'
+    # test attribute error
+    with pytest.raises(SpeweException) as exc:
+        tpl = Template(content="{{field.filename}}")
+        tpl.render({'field': ('myfield', )})
+    assert exc.value.args[0] == "'tuple' object has no attribute 'filename'"
     tpl = Template(content="Hello {{user.username}}")
     assert tpl.render(context) == "Hello cloking"
     tpl = Template(content="Hello {{user.title.capitalize}} {{user.username}}")

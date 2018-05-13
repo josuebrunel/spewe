@@ -22,7 +22,7 @@ import io
 import re
 
 from spewe.exceptions import (TemplateContextError, TemplateNotFound,
-                              TemplateSyntaxError)
+                              TemplateSyntaxError, TemplateAttributeError)
 
 
 VAR_TOKEN_START, VAR_TOKEN_END = "{{", "}}"
@@ -45,6 +45,8 @@ def evaluate(name, context, if_scope=False):
         if if_scope:
             return False
         raise TemplateContextError(name)
+    except (AttributeError,) as exc:
+        raise TemplateAttributeError(exc.args[0])
     except (SyntaxError,):
         raise TemplateSyntaxError(name)
 

@@ -111,7 +111,7 @@ class BaseResponse(object):
         self.status_code = status_code
         self.headers = Headers([])
         self.cookies = kwargs.get('cookies', None)
-        self.content_type
+        self.content_type = content_type
         if self.content_type:
             self.headers.add_header('Content-Type', self.content_type)
 
@@ -127,7 +127,8 @@ class BaseResponse(object):
 
 class Response(BaseResponse):
 
-    content_type = 'text/html; charset=UTF8'
+    def __init__(self, data='', status_code=200, content_type='text/html; charset=UTF8', **kwargs):
+        super(Response, self).__init__(data, status_code, content_type, **kwargs)
 
 
 __all__ = [Request, Response]

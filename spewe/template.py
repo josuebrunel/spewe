@@ -111,9 +111,7 @@ class LoopNode(Node, ScopeNodeMixin):
     def render(self, context):
         content = self.token.content
         iterable_name = content.strip().split()[-1]
-        if iterable_name not in context:
-            raise TemplateContextError(iterable_name)
-        iterable = context[iterable_name]
+        iterable = evaluate(iterable_name, context)
         rendered = []
         for item in iterable:
             context['item'] = item

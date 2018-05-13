@@ -69,7 +69,7 @@ def resolve(name, context):
         if pkey in context:
             break
     else:
-        raise TemplateContextError("%s does not exist in context" % name)
+        raise TemplateContextError(name)
 
     if name == pkey:
         return context[pkey]
@@ -137,7 +137,7 @@ class LoopNode(Node, ScopeNodeMixin):
         content = self.token.content
         items = content.strip().split()[-1]
         if items not in context:
-            raise TemplateContextError("%s does not exist in context" % items)
+            raise TemplateContextError(items)
         items = context[items]
         rendered = []
         for item in items:
@@ -163,7 +163,7 @@ class IfNode(Node, ScopeNodeMixin):
         parts = content.split()[1:]
         if len(parts) not in (1, 3):
             if parts[0] != 'not':
-                raise TemplateSyntaxError("invalid syntax: %s" % content)
+                raise TemplateSyntaxError('<%s>' % content)
         elif len(parts) == 1:
             return parts
         return parts
@@ -175,7 +175,7 @@ class IfNode(Node, ScopeNodeMixin):
             try:
                 return self.operator_lookup[op](*args)
             except (KeyError,):
-                raise TemplateSyntaxError('invalid syntax: <%s> is an invalid operator' % op)
+                raise TemplateSyntaxError('operator <%s> is invalid' % op)
 
         if len(stm) == 1:
             return operator.truth(resolve(stm[0], context))

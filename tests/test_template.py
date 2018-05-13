@@ -1,6 +1,7 @@
 import pytest
 
 from spewe.template import Template
+from spewe.exceptions import SpeweException
 
 
 class DataClass(object):
@@ -42,6 +43,11 @@ def context():
 
 
 def test_variables(context):
+    # test exception when variable doesn't exist
+    with pytest.raises(SpeweException) as exc:
+        tpl = Template(content="Hello {{user}}")
+        tpl.render({})
+    assert exc.value.args[0] == '<user> does not exist in context'
     tpl = Template(content="Hello {{user.username}}")
     assert tpl.render(context) == "Hello cloking"
     tpl = Template(content="Hello {{user.title.capitalize}} {{user.username}}")
@@ -51,11 +57,27 @@ def test_variables(context):
 
 
 def test_iteration(context):
+    # test iteration exception
+    with pytest.raises(SpeweException) as exc:
+        tpl = Template(content="{% loop books %}{{item}}{% endloop %}")
+        tpl.render({})
+    assert exc.value.args[0] == '<books> does not exist in context'
     tpl = Template(content="<div>{{user.title.capitalize}} {{user.username}} liked the books below: <ul>{% loop books %}<li>{{item.title}} from {{item.author}}</li></ul></div>")
     assert tpl.render(context) == "<div>Mme cloking liked the books below: <ul><li>1984 from G. Orwell</li></ul></div><li>Animal Farm from G. Orwell</li></ul></div><li>Beloved from Toni Morison</li></ul></div><li>Roots from Alex Haley</li></ul></div><li>So Long A Letter from Mariame Ba</li></ul></div>"
 
 
 def test_condition(context):
+    # test with invalid operator
+    with pytest.raises(SpeweException) as exc:
+        tpl = Template(content="{% if num >== 10 %}{{num}}{% endif %}")
+        tpl.render({'num': 12})
+    assert exc.value.args[0] == 'invalid syntax: operator <>==> is invalid'
+    # test with invalid syntax
+    with pytest.raises(SpeweException) as exc:
+        tpl = Template(content="{% if nott authenticated %}{{error_message}}{% endif %}")
+        tpl.render({'authenticated': True})
+    assert exc.value.args[0] == 'invalid syntax: <if nott authenticated>'
+
     context['user'].points = 1200
     tpl = Template(content="{% if user.points >= 1000 %}<div>User {{user.username}} is in beast mode!</div>{% endif %}")
     assert tpl.render(context) == "<div>User cloking is in beast mode!</div>"

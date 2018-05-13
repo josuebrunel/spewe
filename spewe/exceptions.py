@@ -44,8 +44,18 @@ class TemplateError(SpeweException):
 
 
 class TemplateSyntaxError(TemplateError):
-    pass
+
+    error_message = 'invalid syntax:'
+
+    def __init__(self, description):
+        message = ' '.join([self.error_message, description])
+        super(TemplateSyntaxError, self).__init__(message)
 
 
 class TemplateContextError(TemplateError):
-    pass
+
+    error_message = '<{}> does not exist in context'
+
+    def __init__(self, variable):
+        message = self.error_message.format(variable)
+        super(TemplateContextError, self).__init__(message)

@@ -43,6 +43,15 @@ class TemplateError(SpeweException):
     pass
 
 
+class TemplateNotFound(TemplateError):
+    error_message = 'template {} not found'
+    status_code = 404
+
+    def __init__(self, template_name):
+        message = self.error_message.format(template_name)
+        super(TemplateNotFound, self).__init__(message)
+
+
 class TemplateSyntaxError(TemplateError):
 
     error_message = 'invalid syntax:'

@@ -1,3 +1,6 @@
+import utils
+
+
 def test_none_response(app):
     app.get('/none/', status=204)
 
@@ -44,3 +47,9 @@ def test_url_argument_parsing(app):
 def test_url_qs_parsing(app):
     resp = app.get('/index/?user=Cartman&from=Southpark')
     assert resp.text == 'Hello Cartman from Southpark !'
+
+
+def test_app_absent_template(app):
+    resp = app.get('/notemplate/', status=404)
+    tpl_filepath = utils.get_test_app_template('none.html')
+    assert 'template %s not found' % tpl_filepath in resp.text

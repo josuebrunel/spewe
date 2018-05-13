@@ -23,7 +23,8 @@ import io
 import operator
 import re
 
-from spewe.exceptions import TemplateContextError, TemplateSyntaxError
+from spewe.exceptions import (TemplateContextError, TemplateNotFound,
+                              TemplateSyntaxError)
 
 
 VAR_TOKEN_START, VAR_TOKEN_END = "{{", "}}"
@@ -266,9 +267,12 @@ class Template(object):
             self.context = {}
 
     def load(self):
-        with io.open(self.name, 'r') as fp:
-            self.content = fp.read()
-        return True
+        try:
+            with io.open(self.name, 'r') as fp:
+                self.content = fp.read()
+            return True
+        except (IOError,):
+            raise TemplateNotFound(self.name)
 
     @property
     def parser(self):

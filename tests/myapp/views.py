@@ -17,6 +17,12 @@ def index(request):
     return "Hello %s from %s !" % (user[0], origin[0])
 
 
+@testapp.route('/notemplate/')
+@testapp.template('none.html')
+def no_template(request, *args, **kwargs):
+    return {'none': 'none is none'}
+
+
 @testapp.route('/login', methods=['POST'])
 @testapp.template('login.html')
 def login(request, *args, **kwargs):

@@ -23,7 +23,7 @@ import re
 import time
 from wsgiref import simple_server
 
-from spewe.exceptions import SpeweException
+from spewe import exceptions
 from spewe.http import Request, Response, status
 from spewe.utils import render_view_template
 
@@ -77,7 +77,7 @@ class Spewe(object):
             response = route.call_view(request, *args, **kwargs)
             if response is None:
                 return Response(status_code=204, content_type='')
-        except (SpeweException,) as exception:
+        except (exceptions.SpeweException,) as exception:
             return Response(data=exception.status_message, status_code=exception.status_code)
         return response
 
@@ -98,7 +98,11 @@ class Spewe(object):
                 kwargs['context'] = context
                 response = func(*args, **kwargs)
                 if isinstance(response, (dict,)):
-                    response = render_view_template(func, name, context)
+                    try:
+                        response = render_view_template(func, name, context)
+                    except (exceptions.TemplateNotFound,) as exc:
+                        response = Response(
+                            data=exc.args[0], status_code=exc.status_code)
                 return response
 
             return wrapper

@@ -40,31 +40,24 @@ class MethodNotAllowed(SpeweException):
 
 
 class TemplateError(SpeweException):
-    pass
+
+    error_message = ''
+
+    def __init__(self, message):
+        message = self.error_message.format(message)
+        super(TemplateError, self).__init__(message)
 
 
 class TemplateNotFound(TemplateError):
     error_message = 'template {} not found'
     status_code = 404
 
-    def __init__(self, template_name):
-        message = self.error_message.format(template_name)
-        super(TemplateNotFound, self).__init__(message)
-
 
 class TemplateSyntaxError(TemplateError):
 
-    error_message = 'invalid syntax:'
-
-    def __init__(self, description):
-        message = ' '.join([self.error_message, description])
-        super(TemplateSyntaxError, self).__init__(message)
+    error_message = 'invalid syntax in statement: {}'
 
 
 class TemplateContextError(TemplateError):
 
     error_message = '<{}> does not exist in context'
-
-    def __init__(self, variable):
-        message = self.error_message.format(variable)
-        super(TemplateContextError, self).__init__(message)

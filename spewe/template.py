@@ -18,9 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import ast
 import io
-import operator
 import re
 
 from spewe.exceptions import (TemplateContextError, TemplateNotFound,
@@ -40,43 +38,17 @@ BLOCK_END = 3
 DOT = '.'
 
 
-def get_possible_names(name):
-    parts = name.split(DOT)
-    length = len(parts)
-    idx = length
-    while idx > 0:
-        yield idx, DOT.join(parts[:idx])
-        idx -= 1
-
-
-def attr_lookup(obj, attrs):
-    if not attrs:
-        return obj
-    val = getattr(obj, attrs.pop(0))
-    if not val:
-        return None
-    if callable(val):
-        val = val()
-    return attr_lookup(val, attrs)
-
-
-def resolve(name, context):
+def evaluate(name, context):
     try:
-        return ast.literal_eval(name)
-    except (ValueError, SyntaxError):
-        pass
-
-    for klen, pkey in get_possible_names(name):
-        if pkey in context:
-            break
-    else:
+        result = eval('%s' % name, context)
+    except (NameError,):
         raise TemplateContextError(name)
+    except (SyntaxError,):
+        raise TemplateSyntaxError(name)
 
-    if name == pkey:
-        return context[pkey]
-    attrs = name.split(DOT)
-    attrs.remove(pkey)
-    return attr_lookup(context[pkey], attrs)
+    if callable(result):
+        result = result()
+    return result
 
 
 class LToken(object):
@@ -129,62 +101,25 @@ class VarNode(Node):
 
     def render(self, context):
         content = self.token.content
-        return resolve(content, context)
+        return evaluate(content, context)
 
 
 class LoopNode(Node, ScopeNodeMixin):
 
     def render(self, context):
         content = self.token.content
-        items = content.strip().split()[-1]
-        if items not in context:
-            raise TemplateContextError(items)
-        items = context[items]
+        iterable_name = content.strip().split()[-1]
+        if iterable_name not in context:
+            raise TemplateContextError(iterable_name)
+        iterable = context[iterable_name]
         rendered = []
-        for item in items:
+        for item in iterable:
             context['item'] = item
             rendered.append(''.join([str(child.render(context)) for child in self.children]))
         return ''.join(rendered)
 
 
 class IfNode(Node, ScopeNodeMixin):
-
-    operator_lookup = {
-        '==': operator.eq,
-        '!=': operator.ne,
-        '>': operator.gt,
-        '>=': operator.ge,
-        '<': operator.lt,
-        '<=': operator.le,
-        'not': operator.not_
-    }
-
-    @staticmethod
-    def process_statement(content):
-        parts = content.split()[1:]
-        if len(parts) not in (1, 3):
-            if parts[0] != 'not':
-                raise TemplateSyntaxError('<%s>' % content)
-        elif len(parts) == 1:
-            return parts
-        return parts
-
-    def eval_statement(self, stm, context):
-
-        def evaluate(op, *args):
-            args = [resolve(hs, context) for hs in args]
-            try:
-                return self.operator_lookup[op](*args)
-            except (KeyError,):
-                raise TemplateSyntaxError('operator <%s> is invalid' % op)
-
-        if len(stm) == 1:
-            return operator.truth(resolve(stm[0], context))
-        elif len(stm) == 2:
-            op, args = stm[0], [stm[1]]
-        else:
-            op, args = stm[1], [stm[0], stm[-1]]
-        return evaluate(op, *args)
 
     def get_branches(self):
         if_branch = []
@@ -197,9 +132,8 @@ class IfNode(Node, ScopeNodeMixin):
         return if_branch, else_branch
 
     def render(self, context):
-        content = self.token.content
-        formatted_statement = self.process_statement(content)
-        result = self.eval_statement(formatted_statement, context)
+        content = ' '.join(self.token.content.split()[1:])
+        result = evaluate(content, context)
         if_branch, else_branch = self.get_branches()
         if result:
             branch = if_branch

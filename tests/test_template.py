@@ -64,6 +64,12 @@ def test_iteration(context):
     assert exc.value.args[0] == '<books> does not exist in context'
     tpl = Template(content="<div>{{user.title.capitalize}} {{user.username}} liked the books below: <ul>{% loop books %}<li>{{item.title}} from {{item.author}}</li></ul></div>")
     assert tpl.render(context) == "<div>Mme cloking liked the books below: <ul><li>1984 from G. Orwell</li></ul></div><li>Animal Farm from G. Orwell</li></ul></div><li>Beloved from Toni Morison</li></ul></div><li>Roots from Alex Haley</li></ul></div><li>So Long A Letter from Mariame Ba</li></ul></div>"
+    # test iteration with dict items
+    nums = {'one': 'un', 'two': 'deux'}
+    tpl = Template(content="{% loop numbers %}<li><em>{{item[0]}}</em> is <em>{{item[1]}}</em> in french</li>{% endloop %}")
+    rendered = tpl.render({'numbers': nums.items()})
+    assert '<li><em>one</em> is <em>un</em> in french</li>' in rendered
+    assert '<li><em>two</em> is <em>deux</em> in french</li>' in rendered
 
 
 def test_condition(context):
@@ -71,12 +77,12 @@ def test_condition(context):
     with pytest.raises(SpeweException) as exc:
         tpl = Template(content="{% if num >== 10 %}{{num}}{% endif %}")
         tpl.render({'num': 12})
-    assert exc.value.args[0] == 'invalid syntax: operator <>==> is invalid'
+    assert exc.value.args[0] == 'invalid syntax in statement: num >== 10'
     # test with invalid syntax
     with pytest.raises(SpeweException) as exc:
         tpl = Template(content="{% if nott authenticated %}{{error_message}}{% endif %}")
         tpl.render({'authenticated': True})
-    assert exc.value.args[0] == 'invalid syntax: <if nott authenticated>'
+    assert exc.value.args[0] == 'invalid syntax in statement: nott authenticated'
 
     context['user'].points = 1200
     tpl = Template(content="{% if user.points >= 1000 %}<div>User {{user.username}} is in beast mode!</div>{% endif %}")

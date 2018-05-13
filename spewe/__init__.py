@@ -78,7 +78,8 @@ class Spewe(object):
             if response is None:
                 return Response(status_code=204, content_type='')
         except (exceptions.SpeweException,) as exception:
-            return Response(data=exception.status_message, status_code=exception.status_code)
+            return Response(data=exception.args[0],
+                            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
         return response
 
     def route(self, url, methods=['GET'], name=None):

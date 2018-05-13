@@ -38,10 +38,12 @@ BLOCK_END = 3
 DOT = '.'
 
 
-def evaluate(name, context):
+def evaluate(name, context, if_scope=False):
     try:
         result = eval('%s' % name, context)
     except (NameError,):
+        if if_scope:
+            return False
         raise TemplateContextError(name)
     except (SyntaxError,):
         raise TemplateSyntaxError(name)
@@ -133,7 +135,7 @@ class IfNode(Node, ScopeNodeMixin):
 
     def render(self, context):
         content = ' '.join(self.token.content.split()[1:])
-        result = evaluate(content, context)
+        result = evaluate(content, context, if_scope=True)
         if_branch, else_branch = self.get_branches()
         if result:
             branch = if_branch

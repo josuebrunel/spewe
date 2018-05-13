@@ -83,6 +83,9 @@ def test_condition(context):
         tpl = Template(content="{% if nott authenticated %}{{error_message}}{% endif %}")
         tpl.render({'authenticated': True})
     assert exc.value.args[0] == 'invalid syntax in statement: nott authenticated'
+    # test with non existant var in scope
+    tpl = Template(content="{% if request.user %}Hello {{request.user.username}}{% endif %}")
+    assert tpl.render({}) == ''
 
     context['user'].points = 1200
     tpl = Template(content="{% if user.points >= 1000 %}<div>User {{user.username}} is in beast mode!</div>{% endif %}")

@@ -125,13 +125,17 @@ class Request(object):
 
 class BaseResponse(object):
 
+    content_type = "text/html; charset=UTF8"
+    status_code = 200
+
     def __init__(self, data='', status_code=200, content_type=None, **kwargs):
         self.data = data
-        self.status_code = status_code
         self.headers = Headers([])
         self.cookies = kwargs.get('cookies', None)
-        self.content_type = content_type
-        if self.content_type:
+        if status_code:
+            self.status_code = status_code
+        if content_type:
+            self.content_type = content_type
             self.headers.add_header('Content-Type', self.content_type)
 
     def add_header(self, name, value, **kwargs):

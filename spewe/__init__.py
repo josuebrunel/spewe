@@ -24,7 +24,8 @@ import time
 from wsgiref import simple_server
 
 from spewe import exceptions
-from spewe.http import Request, Response, status
+from spewe.http import status
+from spewe.http import (Request, Response, ResponseNoContent)
 from spewe.utils import render_view_template
 
 
@@ -76,7 +77,7 @@ class Spewe(object):
         try:
             response = route.call_view(request, *args, **kwargs)
             if response is None:
-                return Response(status_code=204, content_type='')
+                return ResponseNoContent()
         except (exceptions.SpeweException,) as exception:
             return Response(data=exception.args[0],
                             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)

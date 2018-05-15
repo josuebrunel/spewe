@@ -125,10 +125,10 @@ class Request(object):
 
 class BaseResponse(object):
 
-    content_type = "text/html; charset=UTF8"
+    content_type = None
     status_code = 200
 
-    def __init__(self, data='', status_code=200, content_type=None, **kwargs):
+    def __init__(self, data='', status_code=None, content_type=None, **kwargs):
         self.data = data
         self.headers = Headers([])
         self.cookies = kwargs.get('cookies', None)
@@ -136,6 +136,7 @@ class BaseResponse(object):
             self.status_code = status_code
         if content_type:
             self.content_type = content_type
+        if self.content_type:
             self.headers.add_header('Content-Type', self.content_type)
 
     def add_header(self, name, value, **kwargs):
@@ -150,11 +151,19 @@ class BaseResponse(object):
 
 class Response(BaseResponse):
 
-    def __init__(self, data='', status_code=200, content_type='text/html; charset=UTF8', **kwargs):
-        super(Response, self).__init__(data, status_code, content_type, **kwargs)
+    content_type = 'text/html; charset=UTF8'
 
 
 class JsonResponse(BaseResponse):
 
-    def __init__(self, data='', status_code=200, content_type='application/json', **kwargs):
-        super(JsonResponse, self).__init__(json.dumps(data), status_code, content_type, **kwargs)
+    content_type = 'application/json'
+
+    def __init__(self, data, status_code=200, **kwargs):
+        data = json.dumps(data)
+        super(JsonResponse, self).__init__(data, status_code=status_code, **kwargs)
+
+
+class ResponseNoContent(BaseResponse):
+
+    status_code = 204
+    content_type = None

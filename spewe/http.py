@@ -111,7 +111,7 @@ class Request(object):
 
     @property
     def json(self):
-        if self.form.type in ('application/json'):
+        if self.content_type == 'application/json':
             return json.laods(self.body)
 
     def get_full_path(self):

@@ -148,4 +148,7 @@ class Response(BaseResponse):
         super(Response, self).__init__(data, status_code, content_type, **kwargs)
 
 
-__all__ = [Request, Response]
+class JsonResponse(BaseResponse):
+
+    def __init__(self, data='', status_code=200, content_type='application/json', **kwargs):
+        super(JsonResponse, self).__init__(json.dumps(data), status_code, content_type, **kwargs)

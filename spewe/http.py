@@ -93,13 +93,15 @@ class Request(object):
         fp.seek(0)
         body = fp.read()
         fp.seek(0)
-        return body
+        return body.decode()
 
     def _parse_multipart(self):
-        fs = cgi.FieldStorage(fp=self._environ['wsgi.input'],
-                              environ=self._environ)
         form = {}
         files = {}
+        if self.content_type == 'application/json':
+            return form, files
+        fs = cgi.FieldStorage(fp=self._environ['wsgi.input'],
+                              environ=self._environ)
         for field in fs.list:
             if field.filename:
                 xfile = XFormFile(field.filename, field.value, field.type,
@@ -112,7 +114,7 @@ class Request(object):
     @property
     def json(self):
         if self.content_type == 'application/json':
-            return json.laods(self.body)
+            return json.loads(self.body)
 
     def get_full_path(self):
         return '%s%s' % (self.server_name, self.path)

@@ -1,5 +1,5 @@
 from spewe import Spewe
-from spewe.http import Response
+from spewe.http import Response, JsonResponse
 
 
 testapp = Spewe()
@@ -49,3 +49,15 @@ def notes(request, uuid, *args, **kwargs):
         return {}
     context = kwargs.get('context', {})
     return context
+
+
+@testapp.route(r'^/api/users/$', methods=['get', 'post'])
+def api_users(request):
+    users = [{'uuid': 'abcd' * 8, 'username': 'cloking', 'email': 'cloking@lk.corp'}]
+    if request.method == 'GET':
+        return JsonResponse(users)
+    if request.json:
+        data = request.json
+        data['uuid'] = 'aabb' * 8
+        users.append(data)
+    return JsonResponse(users)

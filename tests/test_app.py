@@ -68,3 +68,15 @@ def test_app_absent_template(app):
     resp = app.get('/notemplate/', status=404)
     tpl_filepath = utils.get_test_app_template('none.html')
     assert 'template %s not found' % tpl_filepath in resp.text
+
+
+def test_json_payload(app):
+    url = '/api/users/'
+    resp = app.get(url)
+    assert len(resp.json) == 1
+    assert resp.json[0]['username'] == 'cloking'
+    payload = {'username': 'jloking', 'email': 'jloking@lk.corp'}
+    resp = app.post_json('/api/users/', params=payload)
+    assert len(resp.json) == 2
+    assert resp.json[1]['username'] == 'jloking'
+    assert resp.json[1]['uuid'] == 'aabb' * 8

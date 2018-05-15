@@ -18,6 +18,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 import cgi
+
+try:
+    from http.cookies import SimpleCookie
+except (ImportError,):
+    from Cookie import SimpleCookie
+
 import json
 from wsgiref.headers import Headers
 
@@ -131,7 +137,7 @@ class BaseResponse(object):
     def __init__(self, data='', status_code=None, content_type=None, **kwargs):
         self.data = data
         self.headers = Headers([])
-        self.cookies = kwargs.get('cookies', None)
+        self.cookies = SimpleCookie()
         if status_code:
             self.status_code = status_code
         if content_type:

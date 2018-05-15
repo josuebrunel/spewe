@@ -1,3 +1,5 @@
+from spewe import http
+
 import utils
 
 from webtest import Upload
@@ -80,3 +82,13 @@ def test_json_payload(app):
     assert len(resp.json) == 2
     assert resp.json[1]['username'] == 'jloking'
     assert resp.json[1]['uuid'] == 'aabb' * 8
+
+
+def test_response_redirect(app):
+    url = 'https://example.net/'
+    response = http.ResponsePermanentRedirect(url)
+    assert response.headers['Location'] == url
+    assert response.status_code == 301
+    response = http.ResponseRedirect(url)
+    assert response.headers['Location'] == url
+    assert response.status_code == 302

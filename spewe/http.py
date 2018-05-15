@@ -167,3 +167,17 @@ class ResponseNoContent(BaseResponse):
 
     status_code = 204
     content_type = None
+
+
+class ResponseRedirect(Response):
+
+    status_code = 302
+
+    def __init__(self, url):
+        super(ResponseRedirect, self).__init__()
+        self.add_header('Location', url)
+
+
+class ResponsePermanentRedirect(ResponseRedirect):
+
+    status_code = 301

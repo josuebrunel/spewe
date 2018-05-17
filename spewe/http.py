@@ -85,7 +85,8 @@ class Request(object):
         if self.method not in HTTP_SAFE_METHODS:
             self.form, self.files = self._parse_multipart()
             self.body = self._get_body()
-        self.headers = {key: value for key, value in env.items() if key.startswith('HTTP')}
+        self.headers = Headers(
+            list({key: value for key, value in env.items() if key.startswith('HTTP')}.items()))
 
     def __str__(self):
         return '%s - %s' % (self.method, self.get_full_path())

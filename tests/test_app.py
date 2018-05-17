@@ -1,8 +1,52 @@
+import wsgiref
+
 from spewe import http
 
 import utils
 
 from webtest import Upload
+
+
+def test_request():
+    env = {
+        "CONTENT_LENGTH": "",
+        "CONTENT_TYPE": "text/plain",
+        "HTTP_ACCEPT": "*/*",
+        "HTTP_ACCEPT_ENCODING": "gzip, deflate",
+        "HTTP_CONNECTION": "keep-alive",
+        "HTTP_HOST": "localhost:8099",
+        "HTTP_USER_AGENT": "HTTPie/0.9.3",
+        "PATH_INFO": "/users",
+        "QUERY_STRING": "username=toto&email=toto@toto.org",
+        "REMOTE_ADDR": "127.0.0.1",
+        "REMOTE_HOST": "localhost",
+        "REQUEST_METHOD": "GET",
+        "SCRIPT_NAME": "",
+        "SERVER_NAME": "localhost",
+        "SERVER_PORT": "8099",
+        "SERVER_PROTOCOL": "HTTP/1.1",
+        "SERVER_SOFTWARE": "WSGIServer/0.1 Python/2.7.13",
+        "_": "/usr/bin/python",
+        "wsgi.version": "(1, 0)",
+        "wsgi.run_once": False,
+        "wsgi.multiprocess": False,
+        "wsgi.url_scheme": "http",
+        "wsgi.multithread": True,
+    }
+    wsgiref.util.setup_testing_defaults(env)
+    request = http.Request(env)
+    assert request.scheme == 'http'
+    assert request.method == 'GET'
+    assert request.path == '/users'
+    assert request.query_string == "username=toto&email=toto@toto.org"
+    assert request.content_type == "text/plain"
+    assert request.content_length == ""
+    assert request.server_port == "8099"
+    assert request.server_name == "localhost"
+    assert request.remote_address == "127.0.0.1"
+    assert request.get_full_path() == "http://localhost:8099/users"
+    uuid = 'abcd' * 8
+    assert request.build_absolute_uri(uuid) == "http://localhost:8099/%s" % uuid
 
 
 def test_none_response(app):

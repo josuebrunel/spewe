@@ -24,7 +24,13 @@ try:
 except (ImportError,):
     from Cookie import SimpleCookie
 
+try:
+    from urllib.parse import urljoin
+except (ImportError,):
+    from urlparse import urljoin
+
 import json
+import wsgiref
 from wsgiref.headers import Headers
 
 
@@ -68,8 +74,10 @@ class Request(object):
 
     def __init__(self, env):
         self._environ = env
+        self.scheme = wsgiref.util.guess_scheme(env)
         self.method = env.get('REQUEST_METHOD', None)
         self.path = env.get('PATH_INFO', None)
+        self._full_path = wsgiref.util.request_uri(env, include_query=False)
         self.query_string = env.get('QUERY_STRING', None)
         self.content_type = env.get('CONTENT_TYPE', None)
         self.content_length = env.get('CONTENT_LENGTH', None)
@@ -124,10 +132,10 @@ class Request(object):
             return json.loads(self.body)
 
     def get_full_path(self):
-        return '%s%s' % (self.server_name, self.path)
+        return self._full_path
 
-    def build_absolute_uri(self, path):
-        return '%s%s' % (self.server_name, path)
+    def build_absolute_uri(self, location):
+        return urljoin(self._full_path, location)
 
 
 class BaseResponse(object):

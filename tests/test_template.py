@@ -67,7 +67,7 @@ def test_iteration(context):
         tpl = Template(content="{% loop books %}{{item}}{% endloop %}")
         tpl.render({})
     assert exc.value.args[0] == '<books> does not exist in context'
-    tpl = Template(content="<div>{{user.title.capitalize}} {{user.username}} liked the books below: <ul>{% loop books %}<li>{{item.title}} from {{item.author}}</li></ul></div>")
+    tpl = Template(content="<div>{{user.title.capitalize}} {{user.username}} liked the books below: <ul>{% loop books %}<li>{{item.title}} from {{item.author}}</li></ul></div>{% endloop %}")
     assert tpl.render(context) == "<div>Mme cloking liked the books below: <ul><li>1984 from G. Orwell</li></ul></div><li>Animal Farm from G. Orwell</li></ul></div><li>Beloved from Toni Morison</li></ul></div><li>Roots from Alex Haley</li></ul></div><li>So Long A Letter from Mariame Ba</li></ul></div>"
     # test iteration with dict items
     nums = {'one': 'un', 'two': 'deux'}
@@ -102,3 +102,29 @@ def test_condition(context):
     assert tpl.render(context) == "<div>You need to sign in</div>"
     tpl = Template(content="{% loop books %}{% if item.title == '1984' %}<div>From {{item.author}} and costs ${{item.price}}</div>{% endif %}{% endloop %}")
     assert tpl.render(context) == "<div>From G. Orwell and costs $20</div>"
+
+
+def test_node_integrity(context):
+    # non closed if statement
+    with pytest.raises(SpeweException) as exc:
+        tpl = Template(content="{% if user.authenticated %}<p>Hello {{user.username}}</p>")
+        tpl.render(context)
+    assert issubclass(exc.type, (SpeweException,))
+    assert exc.value.args[0] == 'invalid syntax in statement: <{% if user.authenticated %}>: block not closed'
+    # non closed loop statement
+    with pytest.raises(SpeweException) as exc:
+        tpl = Template(content="{% loop products %}<p>{{item.name}} cots {{item.price}}</p>")
+        tpl.render(context)
+    assert issubclass(exc.type, (SpeweException,))
+    assert exc.value.args[0] == 'invalid syntax in statement: <{% loop products %}>: block not closed'
+    # non closed nested blocks
+    with pytest.raises(SpeweException) as exc:
+        tpl = Template(content="{% if products %}{% loop products %}<p>{{item.name}} costs {{item.price}}</p>{% endloop %}")
+        tpl.render(context)
+    assert issubclass(exc.type, (SpeweException,))
+    assert exc.value.args[0] == 'invalid syntax in statement: <{% if products %}>: block not closed'
+    with pytest.raises(SpeweException) as exc:
+        tpl = Template(content="{% if products %}{% loop products %}<p>{{item.name}} costs {{item.price}}</p>{% endif %}")
+        tpl.render(context)
+    assert issubclass(exc.type, (SpeweException,))
+    assert exc.value.args[0] == 'invalid syntax in statement: <{% loop products %}> is an invalid opening block for <{% endif %}>'

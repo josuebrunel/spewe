@@ -95,7 +95,14 @@ class Node(object):
 
 
 class ScopeNodeMixin(object):
-    scope = True
+
+    def enter_scope(self, stack):
+        stack.append(self)
+        return stack
+
+    def exit_scope(self, stack):
+        stack.pop()
+        return stack
 
 
 class TextNode(Node):
@@ -113,6 +120,8 @@ class VarNode(Node):
 
 class LoopNode(Node, ScopeNodeMixin):
 
+    endblock_tag = 'endloop'
+
     def render(self, context):
         content = self.token.content
         iterable_name = content.strip().split()[-1]
@@ -125,6 +134,8 @@ class LoopNode(Node, ScopeNodeMixin):
 
 
 class IfNode(Node, ScopeNodeMixin):
+
+    endblock_tag = 'endif'
 
     def get_branches(self):
         if_branch = []
@@ -150,7 +161,13 @@ class IfNode(Node, ScopeNodeMixin):
 
 
 class ElseNode(Node, ScopeNodeMixin):
-    pass
+
+    endblock_tag = 'endif'
+
+    def exit_scope(self, stack):
+        stack = super(ElseNode, self).exit_scope(stack)
+        stack.pop()
+        return stack
 
 
 class TemplateParser(object):
@@ -185,12 +202,18 @@ class TemplateParser(object):
         for token in self.tokens:
             parent_scope = scopes[-1]
             if token.content_type == BLOCK_END:
-                scopes.pop()
+                if parent_scope.endblock_tag != token.content:
+                    raise TemplateSyntaxError(
+                        '<%s> is an invalid opening block for <%s>' % (parent_scope.token.raw_content, token.raw_content))
+                parent_scope.exit_scope(scopes)
                 continue
             new_node = self._makenode(token)
             parent_scope.children.append(new_node)
             if token.content_type == BLOCK_START:
-                scopes.append(new_node)
+                new_node.enter_scope(scopes)
+
+        if parent_scope is not self.root:
+            raise TemplateSyntaxError('<%s>: block not closed' % parent_scope.token.raw_content)
         return self.root
 
     def parse(self):

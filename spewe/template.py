@@ -40,6 +40,9 @@ DOT = '.'
 
 def evaluate(name, context, if_scope=False):
     try:
+        # still not safe though, but it's
+        # better a plain and simple eval
+        context['__builtins__'] = {}
         result = eval('%s' % name, context)
     except (NameError,):
         if if_scope:

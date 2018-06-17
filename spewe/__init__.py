@@ -29,6 +29,17 @@ from spewe.http import (Request, Response, ResponseNoContent)
 from spewe.utils import render_view_template
 
 
+class Settings(object):
+
+    _DEFAULT = dict(
+        DEBUG=False
+    )
+
+    def __init__(self):
+        for key, value in self._DEFAULT.items():
+            setattr(self, key, value)
+
+
 class Spewe(object):
 
     def __init__(self):
@@ -36,6 +47,7 @@ class Spewe(object):
         self.start_response = None
         self.routes = []
         self.templates = []
+        self.settings = Settings()
 
     def __call__(self, env, start_response):
         self.environ = env

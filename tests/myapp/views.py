@@ -17,14 +17,12 @@ def index(request):
     return "Hello %s from %s !" % (user[0], origin[0])
 
 
-@testapp.route('/notemplate/')
-@testapp.template('none.html')
+@testapp.route('/notemplate/', template='none.html')
 def no_template(request, *args, **kwargs):
     return {'none': 'none is none'}
 
 
-@testapp.route('/login', methods=['POST'])
-@testapp.template('login.html')
+@testapp.route('/login', methods=['POST'], template='login.html')
 def login(request, *args, **kwargs):
     form = request.form
     context = kwargs['context']
@@ -42,8 +40,7 @@ def users(request, uuid, **kwargs):
     return Response(uuid)
 
 
-@testapp.route(r'^/users/(?P<uuid>[\w,-]+)/notes/', methods=['GET', 'POST'])
-@testapp.template('notes.html')
+@testapp.route(r'^/users/(?P<uuid>[\w,-]+)/notes/', methods=['GET', 'POST'], template='notes.html')
 def notes(request, uuid, *args, **kwargs):
     if request.method == 'GET':
         return {}

@@ -87,7 +87,7 @@ class Spewe(object):
             return Response(data='Method not allowed', status_code=status.HTTP_405_METHOD_NOT_ALLOWED)
 
         try:
-            response = route.call_view(request, *args, **kwargs)
+            response = route(request, *args, **kwargs)
             if response is None:
                 return ResponseNoContent()
         except (exceptions.SpeweException,) as exception:
@@ -95,11 +95,11 @@ class Spewe(object):
                             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
         return response
 
-    def route(self, url, methods=['GET'], name=None):
+    def route(self, url, methods=['GET'], name=None, template=None):
         methods = [method.lower() for method in methods]
 
         def add_route(func):
-            self.routes.append(Route(url, methods, func, name))
+            self.routes.append(Route(url, methods, func, name, template))
         return add_route
 
     def template(self, name):
@@ -126,12 +126,13 @@ class Spewe(object):
 
 class Route(object):
 
-    def __init__(self, url, methods, view, name=None):
+    def __init__(self, url, methods, view, name=None, template=None):
         self.url = url
         self.methods = methods
         self.view = view
         self.name = name if name else view.__name__
         self.match = None
+        self.template = template
 
     def url_match(self, request):
         match = re.match(self.url, request.path)
@@ -145,10 +146,20 @@ class Route(object):
     def is_method_allowed(self, method):
         return method.lower() in self.methods
 
-    def call_view(self, request, *args, **kwargs):
+    def __call__(self, request, *args, **kwargs):
         if self.match:
             kwargs.update(self.match)
+        if self.template:
+            kwargs.setdefault('context', {'request': request})
         response = self.view(request, *args, **kwargs)
         if isinstance(response, str):
-            response = Response(response)
+            return Response(response)
+        if isinstance(response, (dict,)) and self.template:
+            try:
+                response.setdefault('request', request)
+                response = render_view_template(self.view, self.template, response)
+            except (exceptions.TemplateNotFound,) as exc:
+                response = Response(
+                    data=exc.args[0], status_code=exc.status_code)
+                return response
         return response

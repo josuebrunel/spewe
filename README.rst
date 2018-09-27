@@ -1,9 +1,9 @@
 .. image:: https://travis-ci.org/josuebrunel/spewe.svg?branch=master
     :target: https://travis-ci.org/josuebrunel/spewe
-    
+
 .. image:: https://coveralls.io/repos/github/josuebrunel/spewe/badge.svg?branch=master
     :target: https://coveralls.io/github/josuebrunel/spewe?branch=master
-    
+
 .. _test_app: /tests/test_app.py#test_form_submission
 
 
@@ -57,15 +57,14 @@ The structure of the application must be as follow:
         ├── templates
         │   └── login.html
         └── views.py
-        
-The template directory must be at the same level than your *views.py*. 
+
+The template directory must be at the same level than your *views.py*.
 
 *views.py*
 
 .. code:: python
 
-    @testapp.route('/login', methods=['POST'])
-    @testapp.template('login.html')
+    @testapp.route('/login', methods=['POST'], template='login.html')
     def login(request, *args, **kwargs):
         form = request.form
         context = kwargs['context']
@@ -76,12 +75,12 @@ The template directory must be at the same level than your *views.py*.
             context['authenticated'] = False
             context['error_message'] = "Invalid credentials"
         return context
-        
-To use a template for your view, just pass the template name to *app.template* decorator. When the view will be called, a *context* is passed in *kwargs*.
+
+To use a template for your view, just pass the template name to *app.route* decorator. When the view will be called, a *context* is passed in *kwargs*.
 In order to render the template in the response, a *dict* object has to be returned instead of a *response* object.
-        
+
 *login.html*
-        
+
 .. code:: html
 
     {% if authenticated %}
@@ -102,7 +101,7 @@ In order to render the template in the response, a *dict* object has to be retur
     {% endif %}
 
 
-You can check test result in test_app_ 
+You can check test result in test_app_
 
 
 Templates
@@ -184,11 +183,11 @@ The template as an html file
             {% endif %}
         </body>
     </html>
-    
+
 Let's render the template
- 
+
 .. code:: python
- 
+
     In [2]: print(tpl.render(context))
     <html>
         <head>

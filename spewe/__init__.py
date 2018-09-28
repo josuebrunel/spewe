@@ -18,7 +18,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 import datetime
-from functools import wraps
 import re
 import time
 from wsgiref import simple_server
@@ -101,27 +100,6 @@ class Spewe(object):
         def add_route(func):
             self.routes.append(Route(url, methods, func, name, template))
         return add_route
-
-    def template(self, name):
-        def decorator(func):
-            self.templates.append(name)
-
-            @wraps(func)
-            def wrapper(*args, **kwargs):
-                context = {'request': args[0]}
-                kwargs['context'] = context
-                response = func(*args, **kwargs)
-                if isinstance(response, (dict,)):
-                    try:
-                        response = render_view_template(func, name, context)
-                    except (exceptions.TemplateNotFound,) as exc:
-                        response = Response(
-                            data=exc.args[0], status_code=exc.status_code)
-                return response
-
-            return wrapper
-
-        return decorator
 
 
 class Route(object):

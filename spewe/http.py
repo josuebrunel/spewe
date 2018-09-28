@@ -25,9 +25,9 @@ except (ImportError,):
     from Cookie import SimpleCookie
 
 try:
-    from urllib.parse import urljoin
+    from urllib.parse import parse_qs, urljoin
 except (ImportError,):
-    from urlparse import urljoin
+    from urlparse import parse_qs, urljoin
 
 import json
 import wsgiref
@@ -86,7 +86,7 @@ class Request(object):
         self.server_protocol = env.get('SERVER_PROTOCOL', None)
         self.remote_address = env.get('REMOTE_ADDR', None)
         self.remote_host = env.get('REMOTE_HOST', None)
-        self.params = cgi.parse_qs(self.query_string)
+        self.params = parse_qs(self.query_string)
         self.form = {}
         self.files = {}
         self.body = ''

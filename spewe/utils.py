@@ -39,3 +39,7 @@ def render_view_template(view, template_name, context):
     tpl = Template(template_name)
     content = tpl.render(context)
     return Response(content)
+
+
+def render_template(template, context):
+    return Template(template).render(context)

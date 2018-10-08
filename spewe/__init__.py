@@ -18,20 +18,25 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 import datetime
+import os
 import re
 import time
+import traceback
 from wsgiref import simple_server
 
 from spewe import exceptions
 from spewe.http import status
 from spewe.http import (Request, Response, ResponseNoContent)
-from spewe.utils import render_view_template
+from spewe.utils import render_template
 
 
 class Settings(dict):
 
     def __init__(self, **kwargs):
         kwargs.setdefault('DEBUG', False)
+        kwargs.setdefault('BASE_DIR', '')
+        kwargs.setdefault('TEMPLATE_DIR', os.path.join(kwargs['BASE_DIR'], kwargs.get('TEMPLATE_DIR', 'templates')))
+        kwargs.setdefault('STATIC_DIR', os.path.join(kwargs['BASE_DIR'], kwargs.get('STATIC_DIR', 'static')))
         self.__dict__.update(kwargs)
         super(Settings, self).__init__(self, **self.__dict__)
 
@@ -42,9 +47,10 @@ class Spewe(object):
         self.environ = None
         self.start_response = None
         self.routes = []
-        self.templates = []
         if not settings:
             settings = {}
+        BASE_DIR = os.path.dirname(traceback.extract_stack()[-2][0])
+        settings.setdefault('BASE_DIR', BASE_DIR)
         self.settings = Settings(**settings)
 
     def __call__(self, env, start_response):
@@ -97,7 +103,9 @@ class Spewe(object):
         methods = [method.lower() for method in methods]
 
         def add_route(func):
-            self.routes.append(Route(url, methods, func, name, template))
+            route = Route(url, methods, func, name, template)
+            route.app = self
+            self.routes.append(route)
         return add_route
 
 
@@ -109,7 +117,11 @@ class Route(object):
         self.view = view
         self.name = name if name else view.__name__
         self.match = None
-        self.template = template
+        self._template = template
+
+    @property
+    def template(self):
+        return os.path.join(self.app.settings.TEMPLATE_DIR, self._template) if self._template else None
 
     def url_match(self, request):
         match = re.match(self.url, request.path)
@@ -133,8 +145,10 @@ class Route(object):
             return Response(response)
         if isinstance(response, (dict,)) and self.template:
             try:
-                response.setdefault('request', request)
-                response = render_view_template(self.view, self.template, response)
+                response_context = response
+                response_context.setdefault('request', request)
+                response_context.setdefault('app', self.app)
+                response = Response(render_template(self.template, response))
             except (exceptions.TemplateNotFound,) as exc:
                 response = Response(
                     data=exc.args[0], status_code=exc.status_code)

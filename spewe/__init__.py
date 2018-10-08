@@ -28,25 +28,24 @@ from spewe.http import (Request, Response, ResponseNoContent)
 from spewe.utils import render_view_template
 
 
-class Settings(object):
+class Settings(dict):
 
-    _DEFAULT = dict(
-        DEBUG=False
-    )
-
-    def __init__(self):
-        for key, value in self._DEFAULT.items():
-            setattr(self, key, value)
+    def __init__(self, **kwargs):
+        kwargs.setdefault('DEBUG', False)
+        self.__dict__.update(kwargs)
+        super(Settings, self).__init__(self, **self.__dict__)
 
 
 class Spewe(object):
 
-    def __init__(self):
+    def __init__(self, settings=None):
         self.environ = None
         self.start_response = None
         self.routes = []
         self.templates = []
-        self.settings = Settings()
+        if not settings:
+            settings = {}
+        self.settings = Settings(**settings)
 
     def __call__(self, env, start_response):
         self.environ = env

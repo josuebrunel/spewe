@@ -1,6 +1,7 @@
 import wsgiref
 
 from spewe import http
+from spewe import Settings, Spewe
 
 import utils
 
@@ -136,3 +137,18 @@ def test_response_redirect(app):
     response = http.ResponseRedirect(url)
     assert response.headers['Location'] == url
     assert response.status_code == 302
+
+
+def test_app_settings():
+    app = Spewe()
+    assert app.settings.DEBUG is False
+    assert app.settings['DEBUG'] is False
+    csettings = Settings(
+        DEBUG=True,
+        TEMPLATE_DIR='templates',
+        STATIC_DIR='statics',
+    )
+    app = Spewe(settings=csettings)
+    assert app.settings.DEBUG is True
+    assert app.settings.TEMPLATE_DIR == 'templates'
+    assert app.settings.STATIC_DIR == 'statics'

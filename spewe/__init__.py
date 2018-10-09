@@ -119,6 +119,11 @@ class Route(object):
         self.match = None
         self._template = template
 
+    def __unicode__(self):
+        return u'%s - %s - %s' % (self.methods, self.url, self.view)
+
+    __repr__ = __str__ = __unicode__
+
     @property
     def template(self):
         return os.path.join(self.app.settings.TEMPLATE_DIR, self._template) if self._template else None

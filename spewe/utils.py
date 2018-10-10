@@ -17,28 +17,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-import os
-
 from spewe.template import Template
-from spewe.http import Response
-
-
-def get_func_filename(func):
-    if hasattr(func, 'func_code'):
-        return func.func_code.co_filename
-    return func.__code__.co_filename
-
-
-def get_view_template(func_view, template_name):
-    dirname = os.path.dirname(get_func_filename(func_view))
-    return os.path.join(dirname, 'templates', template_name)
-
-
-def render_view_template(view, template_name, context):
-    template_name = get_view_template(view, template_name)
-    tpl = Template(template_name)
-    content = tpl.render(context)
-    return Response(content)
 
 
 def render_template(template, context):

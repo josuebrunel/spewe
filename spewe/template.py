@@ -226,7 +226,8 @@ class Template(object):
         self.name = name
         self.content = content
         if not context:
-            self.context = {}
+            context = {}
+        self.context = context
 
     def load(self):
         try:

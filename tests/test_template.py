@@ -42,6 +42,14 @@ def context():
     return context
 
 
+def test_template_context(context):
+    exp_context = {'nickname': 'Josh'}
+    tpl = Template(content="Hi {{nickname}}", context=exp_context)
+    assert tpl.context == exp_context
+    tpl = Template(content="Hi {{nickname}}")
+    assert tpl.context == {}
+
+
 def test_variables(context):
     # test exception when variable doesn't exist
     with pytest.raises(SpeweException) as exc:

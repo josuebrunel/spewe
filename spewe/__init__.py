@@ -26,7 +26,7 @@ from wsgiref import simple_server
 
 from spewe import exceptions
 from spewe.http import status
-from spewe.http import (Request, Response, ResponseNoContent)
+from spewe.http import (Request, Response, ResponseNoContent, TemplateResponse)
 from spewe.utils import render_template
 
 
@@ -148,12 +148,11 @@ class Route(object):
         response = self.view(request, *args, **kwargs)
         if isinstance(response, str):
             return Response(response)
-        if isinstance(response, (dict,)) and self.template:
+        if isinstance(response, (TemplateResponse,)):
             try:
-                response_context = response
-                response_context.setdefault('request', request)
-                response_context.setdefault('app', self.app)
-                response = Response(render_template(self.template, response))
+                response.context.setdefault('request', request)
+                response.context.setdefault('app', self.app)
+                response = Response(render_template(self.template, response.context))
             except (exceptions.TemplateNotFound,) as exc:
                 response = Response(
                     data=exc.args[0], status_code=exc.status_code)

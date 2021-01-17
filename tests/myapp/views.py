@@ -1,5 +1,5 @@
 from spewe import Spewe
-from spewe.http import Response, JsonResponse
+from spewe.http import Response, JsonResponse, TemplateResponse
 
 
 testapp = Spewe()
@@ -19,7 +19,7 @@ def index(request):
 
 @testapp.route('/notemplate/', template='none.html')
 def no_template(request, *args, **kwargs):
-    return {'none': 'none is none'}
+    return TemplateResponse({'none': 'none is none'})
 
 
 @testapp.route('/login', methods=['POST'], template='login.html')
@@ -32,7 +32,7 @@ def login(request, *args, **kwargs):
     else:
         context['authenticated'] = False
         context['error_message'] = "Invalid credentials"
-    return context
+    return TemplateResponse(context)
 
 
 @testapp.route(r'^/users/(?P<uuid>[\w,-]+)/$')
@@ -43,9 +43,9 @@ def users(request, uuid, **kwargs):
 @testapp.route(r'^/users/(?P<uuid>[\w,-]+)/notes/', methods=['GET', 'POST'], template='notes.html')
 def notes(request, uuid, *args, **kwargs):
     if request.method == 'GET':
-        return {}
+        return TemplateResponse({})
     context = kwargs.get('context', {})
-    return context
+    return TemplateResponse(context)
 
 
 @testapp.route(r'^/api/users/$', methods=['get', 'post'])

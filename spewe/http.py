@@ -178,6 +178,12 @@ class JsonResponse(BaseResponse):
         super(JsonResponse, self).__init__(data, status_code=status_code, **kwargs)
 
 
+class TemplateResponse(BaseResponse):
+
+    def __init__(self, context):
+        self.context = context
+
+
 class ResponseNoContent(BaseResponse):
 
     status_code = 204

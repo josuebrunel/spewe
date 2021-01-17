@@ -64,6 +64,8 @@ The template directory must be at the same level than your *views.py*.
 
 .. code:: python
 
+    from spewe.http import TempateResponse 
+
     @testapp.route('/login', methods=['POST'], template='login.html')
     def login(request, *args, **kwargs):
         form = request.form
@@ -74,7 +76,7 @@ The template directory must be at the same level than your *views.py*.
         else:
             context['authenticated'] = False
             context['error_message'] = "Invalid credentials"
-        return context
+        return TemplateResponse(context)
 
 To use a template for your view, just pass the template name to *app.route* decorator. When the view will be called, a *context* is passed in *kwargs*.
 In order to render the template in the response, a *dict* object has to be returned instead of a *response* object.
